@@ -1,8 +1,0 @@
-getboot:
-  auth:
-    satoken:
-      token-name: Authorization
-      timeout: 2592000
-      active-timeout: -1
-      is-share: true
-      is-log: false

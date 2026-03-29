@@ -7,7 +7,7 @@
     <artifactId>getboot-spring-boot-starter-parent</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
-    <name>GetBoot Spring Boot Starter Parent</name>
+    <name>GetBoot</name>
     <description>GetBoot Spring Boot starters parent</description>
 
     <properties>

@@ -1,3 +1,0 @@
-com.getboot.httpclient.infrastructure.feign.autoconfigure.OpenFeignHttpClientAutoConfiguration
-com.getboot.httpclient.infrastructure.webclient.autoconfigure.WebClientHttpClientAutoConfiguration
-com.getboot.httpclient.infrastructure.resttemplate.autoconfigure.RestTemplateHttpClientAutoConfiguration
