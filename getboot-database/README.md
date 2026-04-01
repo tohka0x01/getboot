@@ -100,9 +100,10 @@ getboot:
 
 ## 边界 / 补充文档
 
-- 当前模块负责数据库接入增强与规则桥接，不抽象通用仓储模型，也不承接 MongoDB 这类非关系型实现
+- 当前模块负责数据库接入增强与规则桥接，不抽象通用仓储模型；MongoDB 当前仍未落地实现，方向规划见下方补充文档
 - 如果启用 `getboot.database.sharding.enabled=true`，会基于 `rule-config` 指向的 YAML 规则文件装配 `shardingSphereDataSource`
 - 与 `getboot-transaction` 联用时，默认要求 `getboot.database.sharding.transaction-type=LOCAL`，避免双重事务协调器冲突
 - 可直接参考 `src/main/resources/getboot-database.yml.example`
 - 可直接参考 `src/main/resources/getboot-database-sharding.yml.example`
 - 可直接参考 `src/main/resources/getboot-database-shardingsphere-rule.yaml.example`
+- 如果你关心下一阶段 MongoDB 是否以及如何进入 `getboot-database`，先看主 README，再看 [`docs/MONGODB_DIRECTION_PLAN.md`](./docs/MONGODB_DIRECTION_PLAN.md)
