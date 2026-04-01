@@ -15,12 +15,11 @@
  */
 package com.getboot.lock.api.properties;
 
+import com.getboot.lock.api.constant.DistributedLockConstants;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 分布式锁能力配置。
- *
- * <p>当前 lock 模块先通过 redis 子树承接实现能力，后续可继续扩展 database / zookeeper 等介质。</p>
+ * Distributed lock configuration properties.
  *
  * @author qiheng
  */
@@ -28,18 +27,25 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class LockProperties {
 
     /**
-     * 是否启用分布式锁能力。
+     * Whether distributed lock support is enabled.
      */
     private boolean enabled = true;
 
     /**
-     * Redis 实现级配置。
+     * Active lock implementation type.
+     */
+    private String type = DistributedLockConstants.LOCK_TYPE_REDIS;
+
+    /**
+     * Redis implementation configuration.
      */
     private Redis redis = new Redis();
 
     /**
-     * Redis 锁配置。
+     * JDBC implementation configuration.
      */
+    private Database database = new Database();
+
     public static class Redis {
         private boolean enabled = true;
         private String keyPrefix = "distributed_lock";
@@ -61,6 +67,63 @@ public class LockProperties {
         }
     }
 
+    public static class Database {
+        private boolean enabled = false;
+        private String keyPrefix = "distributed_lock";
+        private String tableName = "distributed_lock";
+        private long leaseMs = 30000;
+        private long retryIntervalMs = 100;
+        private boolean initializeSchema = false;
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getKeyPrefix() {
+            return keyPrefix;
+        }
+
+        public void setKeyPrefix(String keyPrefix) {
+            this.keyPrefix = keyPrefix;
+        }
+
+        public String getTableName() {
+            return tableName;
+        }
+
+        public void setTableName(String tableName) {
+            this.tableName = tableName;
+        }
+
+        public long getLeaseMs() {
+            return leaseMs;
+        }
+
+        public void setLeaseMs(long leaseMs) {
+            this.leaseMs = leaseMs;
+        }
+
+        public long getRetryIntervalMs() {
+            return retryIntervalMs;
+        }
+
+        public void setRetryIntervalMs(long retryIntervalMs) {
+            this.retryIntervalMs = retryIntervalMs;
+        }
+
+        public boolean isInitializeSchema() {
+            return initializeSchema;
+        }
+
+        public void setInitializeSchema(boolean initializeSchema) {
+            this.initializeSchema = initializeSchema;
+        }
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -69,11 +132,27 @@ public class LockProperties {
         this.enabled = enabled;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Redis getRedis() {
         return redis;
     }
 
     public void setRedis(Redis redis) {
         this.redis = redis;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(Database database) {
+        this.database = database;
     }
 }

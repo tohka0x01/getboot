@@ -16,21 +16,20 @@
 package com.getboot.lock.infrastructure.redis.redisson.aspect;
 
 import com.getboot.lock.api.annotation.DistributedLock;
+import com.getboot.lock.api.constant.DistributedLockConstants;
 import com.getboot.lock.api.properties.LockProperties;
 import com.getboot.lock.spi.DistributedLockAcquireFailureHandler;
 import com.getboot.lock.spi.DistributedLockKeyResolver;
-import com.getboot.lock.api.constant.DistributedLockConstants;
+import com.getboot.lock.support.DistributedLockSupport;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,10 +60,12 @@ public class DistributedLockAspect {
 
     @Around("@annotation(distributedLock)")
     public Object process(ProceedingJoinPoint pjp, DistributedLock distributedLock) throws Throwable {
-        Method method = ((MethodSignature) pjp.getSignature()).getMethod();
-        String key = distributedLockKeyResolver.resolve(pjp, method, distributedLock);
-        String scene = distributedLock.scene();
-        String lockKey = properties.getRedis().getKeyPrefix() + ":" + scene + "#" + key;
+        String lockKey = DistributedLockSupport.resolveFullLockKey(
+                pjp,
+                distributedLock,
+                distributedLockKeyResolver,
+                properties.getRedis().getKeyPrefix()
+        );
 
         int expireTime = distributedLock.expireTime();
         int waitTime = distributedLock.waitTime();
@@ -93,7 +94,7 @@ public class DistributedLockAspect {
 
             if (!lockResult) {
                 LOG.warn("Failed to acquire distributed lock. key={}, expireTimeMs={}", lockKey, expireTime);
-                distributedLockAcquireFailureHandler.onFailure(lockKey, distributedLock);
+                DistributedLockSupport.handleAcquireFailure(lockKey, distributedLock, distributedLockAcquireFailureHandler);
             }
 
             LOG.info("Distributed lock acquired. key={}, expireTimeMs={}", lockKey, expireTime);

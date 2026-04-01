@@ -33,4 +33,10 @@ public final class DistributedLockConstants {
 
     // 默认等待时间（无限等待）
     public static final int DEFAULT_WAIT_TIME = Integer.MAX_VALUE;
+
+    // 默认实现类型
+    public static final String LOCK_TYPE_REDIS = "redis";
+
+    // JDBC 实现类型
+    public static final String LOCK_TYPE_DATABASE = "database";
 }

@@ -13,36 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.getboot.lock.infrastructure.redis.redisson.autoconfigure;
+package com.getboot.lock.infrastructure.database.jdbc.autoconfigure;
 
 import com.getboot.lock.api.properties.LockProperties;
-import com.getboot.lock.infrastructure.redis.redisson.aspect.DistributedLockAspect;
+import com.getboot.lock.infrastructure.database.jdbc.aspect.JdbcDistributedLockAspect;
+import com.getboot.lock.infrastructure.database.jdbc.support.JdbcDistributedLockRepository;
+import com.getboot.lock.infrastructure.database.jdbc.support.JdbcDistributedLockSchemaInitializer;
 import com.getboot.lock.spi.DistributedLockAcquireFailureHandler;
 import com.getboot.lock.spi.DistributedLockKeyResolver;
 import com.getboot.lock.support.DefaultDistributedLockAcquireFailureHandler;
 import com.getboot.lock.support.SpelDistributedLockKeyResolver;
-import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
 
 /**
- * Redis / Redisson 分布式锁自动配置类。
+ * JDBC 分布式锁自动配置。
  *
  * @author qiheng
  */
 @AutoConfiguration
-@ConditionalOnClass(RedissonClient.class)
-@ConditionalOnBean(RedissonClient.class)
+@ConditionalOnClass(DataSource.class)
+@ConditionalOnSingleCandidate(DataSource.class)
 @ConditionalOnProperty(prefix = "getboot.lock", name = "enabled", havingValue = "true", matchIfMissing = true)
-@ConditionalOnExpression("'${getboot.lock.type:redis}' == 'redis' and '${getboot.lock.redis.enabled:true}' == 'true'")
+@ConditionalOnExpression("'${getboot.lock.type:}' == 'database' and '${getboot.lock.database.enabled:false}' == 'true'")
 @EnableConfigurationProperties(LockProperties.class)
-public class DistributedLockAutoConfiguration {
+public class JdbcDistributedLockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
@@ -58,16 +62,39 @@ public class DistributedLockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public DistributedLockAspect distributedLockAspect(
-            RedissonClient redisson,
+    public JdbcDistributedLockRepository jdbcDistributedLockRepository(
+            DataSource dataSource,
+            LockProperties properties) {
+        return new JdbcDistributedLockRepository(
+                new JdbcTemplate(dataSource),
+                properties.getDatabase().getTableName()
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public JdbcDistributedLockAspect distributedLockAspect(
+            JdbcDistributedLockRepository jdbcDistributedLockRepository,
             DistributedLockKeyResolver distributedLockKeyResolver,
             DistributedLockAcquireFailureHandler distributedLockAcquireFailureHandler,
             LockProperties properties) {
-        return new DistributedLockAspect(
-                redisson,
+        return new JdbcDistributedLockAspect(
+                jdbcDistributedLockRepository,
                 distributedLockKeyResolver,
                 distributedLockAcquireFailureHandler,
                 properties
+        );
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "getboot.lock.database", name = "initialize-schema", havingValue = "true")
+    @ConditionalOnMissingBean
+    public JdbcDistributedLockSchemaInitializer jdbcDistributedLockSchemaInitializer(
+            DataSource dataSource,
+            LockProperties properties) {
+        return new JdbcDistributedLockSchemaInitializer(
+                new JdbcTemplate(dataSource),
+                properties.getDatabase().getTableName()
         );
     }
 }
