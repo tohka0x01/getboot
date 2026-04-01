@@ -9,6 +9,30 @@
 - 提供默认审计字段自动填充处理器
 - 提供 ShardingSphere 分库分表接入与规则文件占位符解析
 
+## 接入方式
+
+业务项目继承父 `pom` 后，按需引入：
+
+```xml
+<dependency>
+    <groupId>com.dt</groupId>
+    <artifactId>getboot-database</artifactId>
+</dependency>
+```
+
+适合这几类场景：
+
+- 想统一数据源初始化、连通性校验和启动失败策略
+- 想开箱即用 MyBatis-Plus 分页、乐观锁和审计字段填充
+- 想把 ShardingSphere 的规则文件接入和配置前缀收敛在模块内
+
+## 前置条件
+
+- 需要准备可访问的数据库与基础连接信息
+- 如果使用分库分表，需要额外准备 ShardingSphere 规则 YAML 文件
+- 如果还要接 Seata，建议再引入 `getboot-transaction`，并明确事务组合策略
+- 当前模块会优先从 `getboot.database.*` 承接配置，再桥接到底层组件原生前缀
+
 ## 目录约定
 
 - `api.properties`：对外稳定配置模型
@@ -56,23 +80,29 @@ getboot:
 ## 扩展点
 
 - 业务项目统一使用 `getboot.database.*`
-- 数据源原生配置统一收敛到 `getboot.database.datasource.*`
-- MyBatis-Plus 配置统一使用 `getboot.database.mybatis-plus.*`
-- 分库分表配置统一使用 `getboot.database.sharding.*`
 - 数据库增强统一配置根收敛到 `com.getboot.database.api.properties.DatabaseProperties`
 - 数据源实现相关代码统一收敛在 `com.getboot.database.infrastructure.datasource.*`
 - MyBatis-Plus 实现相关代码统一收敛在 `com.getboot.database.infrastructure.mybatisplus.*`
 - ShardingSphere 实现相关代码统一收敛在 `com.getboot.database.infrastructure.sharding.*`
 - `getboot.database.enabled=true` 时会启用数据源预热、MyBatis-Plus 拦截器与审计字段处理器
-- `getboot.database.sharding.enabled=true` 时会基于 `rule-config` 指向的 YAML 规则文件装配 ShardingSphere `DataSource`
-- `reuse-bean-datasources=true` 时，会优先复用 Spring 容器中已存在的底层 `DataSource` Bean，并按 `data-source-beans` 顺序组装
-- 推荐在规则 YAML 中通过 `${...}` 占位符引用 Spring 环境属性，当前模块会在创建数据源前先解析占位符
-- 若同时启用 `getboot-transaction` 的 Seata 集成，默认要求 `getboot.database.sharding.transaction-type=LOCAL`，避免双重事务协调器冲突
+- `getboot.database.datasource.*` 会桥接到底层 `spring.datasource.*`，但 `enabled` 与 `init.*` 仍保留在模块能力层
+- `getboot.database.mybatis-plus.*` 会桥接到底层 `mybatis-plus.*`
+- `getboot.database.sharding.props.*` / `mode.*` / `rules.*` / `datasource.*` 会桥接到底层 `spring.shardingsphere.*`
+- `reuse-bean-datasources=true` 时，会优先复用 Spring 容器中已有的底层 `DataSource` Bean，并按 `data-source-beans` 顺序组装
+- 推荐在分库分表规则 YAML 中使用 `${...}` 占位符引用 Spring 环境属性，模块会在创建数据源前先解析占位符
 - 当前模块没有额外抽出稳定 SPI，优先通过覆盖标准 Spring / MyBatis-Plus Bean 进行定制
-- 可直接参考 `src/main/resources/getboot-database-sharding.yml.example` 与 `src/main/resources/getboot-database-shardingsphere-rule.yaml.example`
 
 ## 已实现技术栈
 
 - DataSource
 - MyBatis-Plus
 - ShardingSphere
+
+## 边界 / 补充文档
+
+- 当前模块负责数据库接入增强与规则桥接，不抽象通用仓储模型，也不承接 MongoDB 这类非关系型实现
+- 如果启用 `getboot.database.sharding.enabled=true`，会基于 `rule-config` 指向的 YAML 规则文件装配 `shardingSphereDataSource`
+- 与 `getboot-transaction` 联用时，默认要求 `getboot.database.sharding.transaction-type=LOCAL`，避免双重事务协调器冲突
+- 可直接参考 `src/main/resources/getboot-database.yml.example`
+- 可直接参考 `src/main/resources/getboot-database-sharding.yml.example`
+- 可直接参考 `src/main/resources/getboot-database-shardingsphere-rule.yaml.example`
