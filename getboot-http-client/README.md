@@ -82,9 +82,11 @@ getboot:
 - WebClient
 - RestTemplate
 
-补充说明：
+## 边界 / 补充文档
 
 - 业务项目统一使用 `getboot.http-client.*`
 - OpenFeign 配置使用 `getboot.http-client.openfeign.trace.*`
 - WebClient 配置使用 `getboot.http-client.webclient.trace.*`
 - RestTemplate 配置使用 `getboot.http-client.resttemplate.trace.*`
+- 当前模块只承接出站 HTTP 横切增强，不提供统一 HTTP 调用门面
+- 如果你关心下一阶段是否要补更通用客户端封装或新增实现子树，先看主 README，再看 [`docs/HTTP_CLIENT_EVOLUTION_PLAN.md`](./docs/HTTP_CLIENT_EVOLUTION_PLAN.md)
