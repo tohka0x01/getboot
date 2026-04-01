@@ -14,6 +14,8 @@
 - [ ] 在 `getboot-lock` 增加 ZooKeeper 分布式锁实现子树
 - [ ] 统一不同锁实现的默认失败策略、Key 解析策略与扩展点文档
 
+当前设计基线见 [`getboot-lock/docs/LOCK_EVOLUTION_PLAN.md`](../getboot-lock/docs/LOCK_EVOLUTION_PLAN.md)。
+
 ## P1 现有能力补更多实现
 
 - [ ] 在 `getboot-mq` 增加 `Kafka` 实现子树

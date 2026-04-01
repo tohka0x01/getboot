@@ -82,3 +82,4 @@ getboot:
 - `getboot-lock` 负责能力层、注解和切面，不负责 `RedissonClient` 的底层装配；相关基础设施仍由 `getboot-coordination` 承接
 - `getboot.lock.*` 是模块自己的 `@ConfigurationProperties`，`getboot.coordination.redisson.*` 请继续参考 `getboot-coordination/README.md`
 - 可直接参考 `src/main/resources/getboot-lock.yml.example`
+- 如果你关心下一阶段的数据库锁 / ZooKeeper 锁扩展，而不是当前接入方式，先看主 README，再看 [`docs/LOCK_EVOLUTION_PLAN.md`](./docs/LOCK_EVOLUTION_PLAN.md)
