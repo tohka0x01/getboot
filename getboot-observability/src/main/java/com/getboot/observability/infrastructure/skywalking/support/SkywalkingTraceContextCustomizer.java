@@ -33,22 +33,47 @@ import java.util.Map;
  */
 public class SkywalkingTraceContextCustomizer implements TraceContextCustomizer, ReactiveTraceContextCustomizer {
 
+    /**
+     * SkyWalking 配置。
+     */
     private final ObservabilitySkywalkingProperties properties;
 
+    /**
+     * 创建 SkyWalking 上下文定制器。
+     *
+     * @param properties SkyWalking 配置
+     */
     public SkywalkingTraceContextCustomizer(ObservabilitySkywalkingProperties properties) {
         this.properties = properties;
     }
 
+    /**
+     * 为 Servlet 链路补充 SkyWalking MDC 字段。
+     *
+     * @param traceContext Trace 上下文
+     * @return 待写入的 MDC 条目
+     */
     @Override
     public Map<String, String> customize(TraceContext traceContext) {
         return resolveEntries();
     }
 
+    /**
+     * 为 WebFlux 链路补充 SkyWalking MDC 字段。
+     *
+     * @param traceContext 响应式 Trace 上下文
+     * @return 待写入的 MDC 条目
+     */
     @Override
     public Map<String, String> customize(ReactiveTraceContext traceContext) {
         return resolveEntries();
     }
 
+    /**
+     * 解析当前 SkyWalking TraceId 对应的 MDC 条目。
+     *
+     * @return 待写入的 MDC 条目
+     */
     private Map<String, String> resolveEntries() {
         String skywalkingTraceId = SkywalkingTraceSupport.resolveTraceId();
         if (!StringUtils.hasText(skywalkingTraceId)) {

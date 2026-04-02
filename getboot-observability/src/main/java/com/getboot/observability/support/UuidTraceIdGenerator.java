@@ -28,6 +28,11 @@ import java.util.UUID;
  */
 public class UuidTraceIdGenerator implements TraceIdGenerator {
 
+    /**
+     * 生成默认 TraceId。
+     *
+     * @return 去除短横线后的 UUID 字符串
+     */
     @Override
     public String generate() {
         return UUID.randomUUID().toString().replace("-", "");

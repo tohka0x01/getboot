@@ -41,11 +41,34 @@ import java.util.Map;
  */
 public class TraceWebFilter implements WebFilter {
 
+    /**
+     * Trace 配置。
+     */
     private final ObservabilityTraceProperties traceProperties;
+
+    /**
+     * TraceId 生成器。
+     */
     private final TraceIdGenerator traceIdGenerator;
+
+    /**
+     * 响应式 TraceId 解析器列表。
+     */
     private final List<ReactiveTraceIdResolver> traceIdResolvers;
+
+    /**
+     * 响应式 Trace 上下文定制器列表。
+     */
     private final List<ReactiveTraceContextCustomizer> traceContextCustomizers;
 
+    /**
+     * 创建 WebFlux Trace 过滤器。
+     *
+     * @param traceProperties Trace 配置
+     * @param traceIdGenerator TraceId 生成器
+     * @param traceIdResolvers 响应式 TraceId 解析器列表
+     * @param traceContextCustomizers 响应式 Trace 上下文定制器列表
+     */
     public TraceWebFilter(
             ObservabilityTraceProperties traceProperties,
             TraceIdGenerator traceIdGenerator,
@@ -57,6 +80,13 @@ public class TraceWebFilter implements WebFilter {
         this.traceContextCustomizers = traceContextCustomizers == null ? List.of() : List.copyOf(traceContextCustomizers);
     }
 
+    /**
+     * 在订阅阶段绑定 Trace 上下文，并在链路结束后恢复现场。
+     *
+     * @param exchange 当前请求交换器
+     * @param chain 过滤器链
+     * @return 过滤执行结果
+     */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String traceId = resolveTraceId(exchange);
@@ -94,6 +124,12 @@ public class TraceWebFilter implements WebFilter {
         });
     }
 
+    /**
+     * 解析当前请求应使用的 TraceId。
+     *
+     * @param exchange 当前请求交换器
+     * @return TraceId
+     */
     private String resolveTraceId(ServerWebExchange exchange) {
         for (ReactiveTraceIdResolver traceIdResolver : traceIdResolvers) {
             String resolvedTraceId = traceIdResolver.resolve(exchange);
@@ -111,6 +147,11 @@ public class TraceWebFilter implements WebFilter {
         return traceIdGenerator.generate();
     }
 
+    /**
+     * 恢复过滤前的 MDC 状态。
+     *
+     * @param previousMdcValues 过滤前的 MDC 值
+     */
     private void restoreMdc(Map<String, String> previousMdcValues) {
         previousMdcValues.forEach((key, previousValue) -> {
             if (previousValue == null) {
@@ -121,6 +162,12 @@ public class TraceWebFilter implements WebFilter {
         });
     }
 
+    /**
+     * 写入当前链路所需的 MDC 条目，并返回写入前的旧值。
+     *
+     * @param mdcEntries 待写入的 MDC 条目
+     * @return 写入前的 MDC 值
+     */
     private Map<String, String> applyMdcEntries(Map<String, String> mdcEntries) {
         Map<String, String> previousMdcValues = new LinkedHashMap<>();
         mdcEntries.forEach((key, value) -> {

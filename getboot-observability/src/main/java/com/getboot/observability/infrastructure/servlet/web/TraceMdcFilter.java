@@ -43,11 +43,34 @@ import java.util.Map;
  */
 public class TraceMdcFilter extends OncePerRequestFilter {
 
+    /**
+     * Trace 配置。
+     */
     private final ObservabilityTraceProperties traceProperties;
+
+    /**
+     * TraceId 生成器。
+     */
     private final TraceIdGenerator traceIdGenerator;
+
+    /**
+     * TraceId 解析器列表。
+     */
     private final List<TraceIdResolver> traceIdResolvers;
+
+    /**
+     * Trace 上下文定制器列表。
+     */
     private final List<TraceContextCustomizer> traceContextCustomizers;
 
+    /**
+     * 创建 Servlet Trace 过滤器。
+     *
+     * @param traceProperties Trace 配置
+     * @param traceIdGenerator TraceId 生成器
+     * @param traceIdResolvers TraceId 解析器列表
+     * @param traceContextCustomizers Trace 上下文定制器列表
+     */
     public TraceMdcFilter(
             ObservabilityTraceProperties traceProperties,
             TraceIdGenerator traceIdGenerator,
@@ -59,6 +82,15 @@ public class TraceMdcFilter extends OncePerRequestFilter {
         this.traceContextCustomizers = traceContextCustomizers == null ? List.of() : List.copyOf(traceContextCustomizers);
     }
 
+    /**
+     * 处理当前请求的 Trace 绑定、MDC 注入与清理逻辑。
+     *
+     * @param request 当前请求
+     * @param response 当前响应
+     * @param filterChain 过滤器链
+     * @throws ServletException Servlet 异常
+     * @throws IOException IO 异常
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -100,6 +132,12 @@ public class TraceMdcFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * 解析当前请求应使用的 TraceId。
+     *
+     * @param request 当前请求
+     * @return TraceId
+     */
     private String resolveTraceId(HttpServletRequest request) {
         for (TraceIdResolver traceIdResolver : traceIdResolvers) {
             String resolvedTraceId = traceIdResolver.resolve(request);
@@ -117,6 +155,11 @@ public class TraceMdcFilter extends OncePerRequestFilter {
         return traceIdGenerator.generate();
     }
 
+    /**
+     * 恢复过滤前的 MDC 状态。
+     *
+     * @param previousMdcValues 过滤前的 MDC 值
+     */
     private void restoreMdc(Map<String, String> previousMdcValues) {
         previousMdcValues.forEach((key, previousValue) -> {
             if (previousValue == null) {

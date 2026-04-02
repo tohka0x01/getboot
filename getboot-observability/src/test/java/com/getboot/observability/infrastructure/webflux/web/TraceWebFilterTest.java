@@ -32,8 +32,16 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+/**
+ * {@link TraceWebFilter} 测试。
+ *
+ * @author qiheng
+ */
 class TraceWebFilterTest {
 
+    /**
+     * 验证 WebFlux 过滤器会在订阅阶段绑定并在结束后恢复 Trace 上下文。
+     */
     @Test
     void shouldBindAndRestoreTraceContextAtSubscriptionTime() {
         ObservabilityTraceProperties properties = new ObservabilityTraceProperties();

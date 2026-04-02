@@ -25,8 +25,16 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * {@link PrometheusPropertyAliasEnvironmentPostProcessor} 测试。
+ *
+ * @author qiheng
+ */
 class PrometheusPropertyAliasEnvironmentPostProcessorTest {
 
+    /**
+     * 验证 Prometheus 与 management 配置会被映射为 Actuator 原生前缀。
+     */
     @Test
     void shouldAliasPrometheusAndManagementProperties() {
         ConfigurableEnvironment environment = new StandardEnvironment();

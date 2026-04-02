@@ -28,12 +28,26 @@ import org.springframework.core.task.TaskDecorator;
  */
 public class TraceTaskDecorator implements TaskDecorator {
 
+    /**
+     * 上下文快照工厂。
+     */
     private final ContextSnapshotFactory contextSnapshotFactory;
 
+    /**
+     * 创建 Trace 任务装饰器。
+     *
+     * @param contextSnapshotFactory 上下文快照工厂
+     */
     public TraceTaskDecorator(ContextSnapshotFactory contextSnapshotFactory) {
         this.contextSnapshotFactory = contextSnapshotFactory;
     }
 
+    /**
+     * 包装待执行任务，并在执行前恢复父线程上下文。
+     *
+     * @param runnable 原始任务
+     * @return 包装后的任务
+     */
     @Override
     public Runnable decorate(Runnable runnable) {
         ContextSnapshot contextSnapshot = contextSnapshotFactory.captureAll();

@@ -26,9 +26,19 @@ import org.springframework.util.StringUtils;
  */
 public final class SkywalkingTraceSupport {
 
+    /**
+     * SkyWalking TraceContext 类型名称。
+     */
     private static final String TRACE_CONTEXT_CLASS_NAME = "org.apache.skywalking.apm.toolkit.trace.TraceContext";
+
+    /**
+     * SkyWalking 不可用时返回的占位 TraceId。
+     */
     private static final String UNAVAILABLE_TRACE_ID = "N/A";
 
+    /**
+     * 禁止实例化工具类。
+     */
     private SkywalkingTraceSupport() {
     }
 

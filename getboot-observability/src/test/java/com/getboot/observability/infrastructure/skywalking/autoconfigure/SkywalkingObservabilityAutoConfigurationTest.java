@@ -29,8 +29,16 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * {@link SkywalkingObservabilityAutoConfiguration} 测试。
+ *
+ * @author qiheng
+ */
 class SkywalkingObservabilityAutoConfigurationTest {
 
+    /**
+     * 应用上下文运行器。
+     */
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations.of(
                     SkywalkingObservabilityAutoConfiguration.class
@@ -40,6 +48,9 @@ class SkywalkingObservabilityAutoConfigurationTest {
                     "getboot.observability.skywalking.mdc-key=swTraceId"
             );
 
+    /**
+     * 验证 SkyWalking 桥接 Bean 会同时覆盖 Servlet 与响应式场景。
+     */
     @Test
     void shouldExposeSkywalkingBeansForServletAndReactiveBridge() {
         org.apache.skywalking.apm.toolkit.trace.TraceContext.setTraceId("sw-trace-001");

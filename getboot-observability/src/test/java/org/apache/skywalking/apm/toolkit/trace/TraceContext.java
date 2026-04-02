@@ -22,15 +22,31 @@ package org.apache.skywalking.apm.toolkit.trace;
  */
 public final class TraceContext {
 
+    /**
+     * 当前测试链路的 TraceId。
+     */
     private static String traceId;
 
+    /**
+     * 禁止实例化工具类。
+     */
     private TraceContext() {
     }
 
+    /**
+     * 读取当前测试 TraceId。
+     *
+     * @return 当前测试 TraceId
+     */
     public static String traceId() {
         return traceId;
     }
 
+    /**
+     * 设置当前测试 TraceId。
+     *
+     * @param traceId 当前测试 TraceId
+     */
     public static void setTraceId(String traceId) {
         TraceContext.traceId = traceId;
     }

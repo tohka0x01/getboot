@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class PrometheusPropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回别名属性源名称。
+     *
+     * @return 属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootPrometheusAliasedProperties";
     }
 
+    /**
+     * 写入可观测配置前缀与 Actuator 原生前缀之间的别名映射。
+     *
+     * @param environment 当前环境
+     * @param aliasedProperties 别名属性容器
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(environment, aliasedProperties, "getboot.observability.management.", "management.");

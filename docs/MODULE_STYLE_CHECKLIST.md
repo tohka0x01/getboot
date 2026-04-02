@@ -45,7 +45,7 @@
 - [ ] `getboot-database`
 - [x] `getboot-storage`
 - [x] `getboot-sms`
-- [ ] `getboot-observability`
+- [x] `getboot-observability`
 
 ### Cross-Cutting Capability
 

@@ -22,8 +22,16 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+/**
+ * {@link TraceTaskDecoratorBeanPostProcessor} 测试。
+ *
+ * @author qiheng
+ */
 class TraceTaskDecoratorBeanPostProcessorTest {
 
+    /**
+     * 验证缺少任务装饰器时会自动补充 Trace 装饰器。
+     */
     @Test
     void shouldDecorateSimpleAsyncTaskExecutorWhenDecoratorIsMissing() {
         TaskDecorator traceTaskDecorator = runnable -> runnable;
@@ -36,6 +44,9 @@ class TraceTaskDecoratorBeanPostProcessorTest {
         assertSame(traceTaskDecorator, ReflectionTestUtils.getField(taskExecutor, "taskDecorator"));
     }
 
+    /**
+     * 验证已有任务装饰器时保持原有配置不变。
+     */
     @Test
     void shouldKeepExistingSimpleAsyncTaskExecutorDecorator() {
         TaskDecorator existingTaskDecorator = runnable -> runnable;

@@ -34,16 +34,37 @@ import java.util.function.Supplier;
  */
 public class TraceTaskDecoratorBeanPostProcessor implements BeanPostProcessor {
 
+    /**
+     * 任务装饰器提供器。
+     */
     private final Supplier<TaskDecorator> taskDecoratorSupplier;
 
+    /**
+     * 使用固定任务装饰器创建后处理器。
+     *
+     * @param taskDecorator 任务装饰器
+     */
     public TraceTaskDecoratorBeanPostProcessor(TaskDecorator taskDecorator) {
         this(() -> taskDecorator);
     }
 
+    /**
+     * 使用任务装饰器提供器创建后处理器。
+     *
+     * @param taskDecoratorSupplier 任务装饰器提供器
+     */
     public TraceTaskDecoratorBeanPostProcessor(Supplier<TaskDecorator> taskDecoratorSupplier) {
         this.taskDecoratorSupplier = taskDecoratorSupplier;
     }
 
+    /**
+     * 为常见异步执行器补充 Trace 任务装饰器。
+     *
+     * @param bean 当前 Bean
+     * @param beanName Bean 名称
+     * @return 处理后的 Bean
+     * @throws BeansException Bean 处理异常
+     */
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof ThreadPoolTaskExecutor taskExecutor && !hasTaskDecorator(taskExecutor, ThreadPoolTaskExecutor.class)) {
@@ -57,6 +78,13 @@ public class TraceTaskDecoratorBeanPostProcessor implements BeanPostProcessor {
         return bean;
     }
 
+    /**
+     * 判断目标执行器是否已经配置任务装饰器。
+     *
+     * @param target 目标执行器
+     * @param targetClass 目标类型
+     * @return 已配置时返回 {@code true}
+     */
     private boolean hasTaskDecorator(Object target, Class<?> targetClass) {
         Field field = ReflectionUtils.findField(targetClass, "taskDecorator");
         if (field == null) {

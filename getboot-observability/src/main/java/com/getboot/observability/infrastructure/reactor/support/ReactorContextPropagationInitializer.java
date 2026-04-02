@@ -28,12 +28,23 @@ import reactor.core.publisher.Hooks;
  */
 public class ReactorContextPropagationInitializer implements InitializingBean {
 
+    /**
+     * Reactor 配置。
+     */
     private final ObservabilityReactorProperties properties;
 
+    /**
+     * 创建 Reactor 上下文传播初始化器。
+     *
+     * @param properties Reactor 配置
+     */
     public ReactorContextPropagationInitializer(ObservabilityReactorProperties properties) {
         this.properties = properties;
     }
 
+    /**
+     * 按配置启用 Reactor 自动上下文传播。
+     */
     @Override
     public void afterPropertiesSet() {
         if (properties.isAutomaticContextPropagationEnabled()) {

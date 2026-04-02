@@ -29,11 +29,23 @@ import org.springframework.web.server.ServerWebExchange;
  */
 public class SkywalkingTraceIdResolver implements TraceIdResolver, ReactiveTraceIdResolver {
 
+    /**
+     * 解析 Servlet 请求对应的 SkyWalking TraceId。
+     *
+     * @param request 当前请求
+     * @return SkyWalking TraceId
+     */
     @Override
     public String resolve(HttpServletRequest request) {
         return SkywalkingTraceSupport.resolveTraceId();
     }
 
+    /**
+     * 解析 WebFlux 请求对应的 SkyWalking TraceId。
+     *
+     * @param exchange 当前请求交换器
+     * @return SkyWalking TraceId
+     */
     @Override
     public String resolve(ServerWebExchange exchange) {
         return SkywalkingTraceSupport.resolveTraceId();

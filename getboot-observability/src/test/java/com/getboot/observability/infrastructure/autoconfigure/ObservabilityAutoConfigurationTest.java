@@ -40,20 +40,34 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * {@link ObservabilityAutoConfiguration} 测试。
+ *
+ * @author qiheng
+ */
 class ObservabilityAutoConfigurationTest {
 
+    /**
+     * 应用上下文运行器。
+     */
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(
                     TraceContextPropagationAutoConfiguration.class,
                     ObservabilityAutoConfiguration.class
             ));
 
+    /**
+     * 清理测试过程中写入的 Trace 上下文。
+     */
     @AfterEach
     void tearDown() {
         TraceContextHolder.clear();
         MDC.clear();
     }
 
+    /**
+     * 验证默认情况下会注册异步 Trace 相关 Bean。
+     */
     @Test
     void shouldRegisterAsyncTraceBeansByDefault() {
         contextRunner.run(context -> {
@@ -66,6 +80,9 @@ class ObservabilityAutoConfigurationTest {
         });
     }
 
+    /**
+     * 验证任务装饰器能够透传 Trace 上下文与 MDC。
+     */
     @Test
     void shouldPropagateTraceContextThroughTaskDecorator() {
         contextRunner.run(context -> {
@@ -93,6 +110,9 @@ class ObservabilityAutoConfigurationTest {
         });
     }
 
+    /**
+     * 验证关闭异步传播后不会注册相关 Bean。
+     */
     @Test
     void shouldSkipAsyncPropagationBeansWhenDisabled() {
         contextRunner
@@ -104,6 +124,9 @@ class ObservabilityAutoConfigurationTest {
                 });
     }
 
+    /**
+     * 验证存在自定义任务装饰器时仍会优先挂载 GetBoot 的 Trace 装饰器。
+     */
     @Test
     void shouldUseGetbootTaskDecoratorWhenCustomTaskDecoratorBeanExists() {
         contextRunner
@@ -120,18 +143,34 @@ class ObservabilityAutoConfigurationTest {
                 });
     }
 
+    /**
+     * 自定义任务装饰器配置。
+     */
     @Configuration(proxyBeanMethods = false)
     static class CustomTaskDecoratorConfiguration {
 
+        /**
+         * 注册业务自定义任务装饰器。
+         *
+         * @return 自定义任务装饰器
+         */
         @Bean
         TaskDecorator customTaskDecorator() {
             return runnable -> runnable;
         }
     }
 
+    /**
+     * 异步执行器配置。
+     */
     @Configuration(proxyBeanMethods = false)
     static class AsyncExecutorConfiguration {
 
+        /**
+         * 注册测试用线程池执行器。
+         *
+         * @return 线程池执行器
+         */
         @Bean
         ThreadPoolTaskExecutor applicationTaskExecutor() {
             ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
