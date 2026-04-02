@@ -60,7 +60,6 @@ public class TraceWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String traceId = resolveTraceId(exchange);
-        String previousTraceId = TraceContextHolder.bindTraceId(traceId);
         Map<String, String> mdcEntries = new LinkedHashMap<>();
         mdcEntries.put(traceProperties.getMdcKey(), traceId);
 
@@ -77,22 +76,22 @@ public class TraceWebFilter implements WebFilter {
             });
         });
 
-        Map<String, String> previousMdcValues = new LinkedHashMap<>();
-        mdcEntries.forEach((key, value) -> {
-            previousMdcValues.put(key, MDC.get(key));
-            MDC.put(key, value);
-        });
         exchange.getAttributes().put(traceProperties.getRequestAttributeName(), traceId);
         if (traceProperties.isResponseHeaderEnabled() && StringUtils.hasText(traceProperties.getHeaderName())) {
             exchange.getResponse().getHeaders().set(traceProperties.getHeaderName(), traceId);
         }
 
-        try {
-            return chain.filter(exchange).contextCapture();
-        } finally {
-            restoreMdc(previousMdcValues);
-            TraceContextHolder.restoreTraceId(previousTraceId);
-        }
+        // WebFlux 过滤链在订阅时才真正执行，因此 ThreadLocal 绑定也要延后到订阅阶段。
+        return Mono.defer(() -> {
+            String previousTraceId = TraceContextHolder.bindTraceId(traceId);
+            Map<String, String> previousMdcValues = applyMdcEntries(mdcEntries);
+            return chain.filter(exchange)
+                    .contextCapture()
+                    .doFinally(signalType -> {
+                        restoreMdc(previousMdcValues);
+                        TraceContextHolder.restoreTraceId(previousTraceId);
+                    });
+        });
     }
 
     private String resolveTraceId(ServerWebExchange exchange) {
@@ -120,5 +119,14 @@ public class TraceWebFilter implements WebFilter {
             }
             MDC.put(key, previousValue);
         });
+    }
+
+    private Map<String, String> applyMdcEntries(Map<String, String> mdcEntries) {
+        Map<String, String> previousMdcValues = new LinkedHashMap<>();
+        mdcEntries.forEach((key, value) -> {
+            previousMdcValues.put(key, MDC.get(key));
+            MDC.put(key, value);
+        });
+        return previousMdcValues;
     }
 }

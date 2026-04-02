@@ -17,6 +17,8 @@ package com.getboot.observability.infrastructure.skywalking.support;
 
 import com.getboot.observability.api.context.TraceContext;
 import com.getboot.observability.api.properties.ObservabilitySkywalkingProperties;
+import com.getboot.observability.api.context.ReactiveTraceContext;
+import com.getboot.observability.spi.ReactiveTraceContextCustomizer;
 import com.getboot.observability.spi.TraceContextCustomizer;
 import org.springframework.util.StringUtils;
 
@@ -29,7 +31,7 @@ import java.util.Map;
  *
  * @author qiheng
  */
-public class SkywalkingTraceContextCustomizer implements TraceContextCustomizer {
+public class SkywalkingTraceContextCustomizer implements TraceContextCustomizer, ReactiveTraceContextCustomizer {
 
     private final ObservabilitySkywalkingProperties properties;
 
@@ -39,6 +41,15 @@ public class SkywalkingTraceContextCustomizer implements TraceContextCustomizer 
 
     @Override
     public Map<String, String> customize(TraceContext traceContext) {
+        return resolveEntries();
+    }
+
+    @Override
+    public Map<String, String> customize(ReactiveTraceContext traceContext) {
+        return resolveEntries();
+    }
+
+    private Map<String, String> resolveEntries() {
         String skywalkingTraceId = SkywalkingTraceSupport.resolveTraceId();
         if (!StringUtils.hasText(skywalkingTraceId)) {
             return Map.of();

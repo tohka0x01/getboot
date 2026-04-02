@@ -7,7 +7,7 @@
 - 提供统一的 `traceId` 生成、透传与响应回写能力
 - 提供基于 `MDC` 的日志链路上下文能力
 - 提供 Prometheus 指标注册与 Actuator 暴露能力
-- 提供 SkyWalking TraceId 桥接能力
+- 提供 SkyWalking TraceId 在 Servlet / WebFlux 场景下的桥接能力
 - 提供可扩展的 Trace SPI，便于业务自定义链路字段
 - 提供日志 `logback-spring.xml` 示例，便于业务统一输出 `tid`
 - 提供 `@Async` / Spring 线程池 Trace 上下文自动透传能力
@@ -92,7 +92,7 @@ getboot:
 - Servlet 场景默认注册 `FilterRegistrationBean<TraceMdcFilter>`
 - WebFlux 场景默认注册 `WebFilter traceWebFilter`
 - Prometheus 场景默认注册 `MeterRegistryCustomizer<MeterRegistry>`
-- SkyWalking 场景默认注册 `TraceIdResolver` 和 `TraceContextCustomizer`
+- SkyWalking 场景默认注册 `SkywalkingTraceIdResolver` 和 `SkywalkingTraceContextCustomizer`
 
 ## 扩展点
 
@@ -103,6 +103,7 @@ getboot:
 - `ReactiveTraceContextCustomizer`
 - `ObservabilityMeterRegistryCustomizer`
 - 主 `traceId` 默认优先取链路系统解析结果，例如 SkyWalking；没有时再回退到请求头与本地生成
+- SkyWalking 桥接同时覆盖 `TraceIdResolver` / `ReactiveTraceIdResolver` 与 `TraceContextCustomizer` / `ReactiveTraceContextCustomizer`
 - 当前链路 TraceId 会写入 `getboot-support` 提供的 `TraceContextHolder`，供 Dubbo、Feign、MQ 等下游组件继续透传
 - `@Async`、`ThreadPoolTaskExecutor`、`SimpleAsyncTaskExecutor` 默认会自动透传 Trace 上下文；若直接使用手工线程池，可通过 `TraceContextPropagationSupport.wrap(...)` 包装任务
 

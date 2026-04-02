@@ -18,8 +18,6 @@ package com.getboot.observability.infrastructure.skywalking.autoconfigure;
 import com.getboot.observability.api.properties.ObservabilitySkywalkingProperties;
 import com.getboot.observability.infrastructure.skywalking.support.SkywalkingTraceContextCustomizer;
 import com.getboot.observability.infrastructure.skywalking.support.SkywalkingTraceIdResolver;
-import com.getboot.observability.spi.TraceContextCustomizer;
-import com.getboot.observability.spi.TraceIdResolver;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -50,7 +48,7 @@ public class SkywalkingObservabilityAutoConfiguration {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     @ConditionalOnMissingBean(name = "skywalkingTraceIdResolver")
-    public TraceIdResolver skywalkingTraceIdResolver() {
+    public SkywalkingTraceIdResolver skywalkingTraceIdResolver() {
         return new SkywalkingTraceIdResolver();
     }
 
@@ -62,7 +60,7 @@ public class SkywalkingObservabilityAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(name = "skywalkingTraceContextCustomizer")
-    public TraceContextCustomizer skywalkingTraceContextCustomizer(ObservabilitySkywalkingProperties properties) {
+    public SkywalkingTraceContextCustomizer skywalkingTraceContextCustomizer(ObservabilitySkywalkingProperties properties) {
         return new SkywalkingTraceContextCustomizer(properties);
     }
 }
