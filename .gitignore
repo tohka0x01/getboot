@@ -12,6 +12,7 @@ target/
 *.iml
 *.ipr
 .m2
+.m2-repo/
 .idea
 
 ### Eclipse ###

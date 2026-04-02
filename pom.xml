@@ -36,6 +36,7 @@
         <xxl-job.version>2.4.0</xxl-job.version>
         <httpclient.version>4.5.13</httpclient.version>
         <shardingsphere.version>5.5.0</shardingsphere.version>
+        <minio.version>8.6.0</minio.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
@@ -66,6 +67,7 @@
         <module>getboot-limiter</module>
         <module>getboot-lock</module>
         <module>getboot-idempotency</module>
+        <module>getboot-storage</module>
         <module>getboot-mq</module>
         <module>getboot-rpc</module>
         <module>getboot-auth</module>
@@ -149,6 +151,11 @@
             <dependency>
                 <groupId>com.dt</groupId>
                 <artifactId>getboot-idempotency</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dt</groupId>
+                <artifactId>getboot-storage</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -308,6 +315,11 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
                 <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.shardingsphere</groupId>

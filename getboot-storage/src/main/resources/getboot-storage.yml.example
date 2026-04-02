@@ -1,0 +1,18 @@
+getboot:
+  storage:
+    enabled: true
+    type: minio
+    default-bucket: app-default
+    default-download-url-ttl: 15m
+    default-upload-url-ttl: 15m
+    scene-buckets:
+      invoice: billing-bucket
+      avatar: user-assets
+    minio:
+      enabled: true
+      endpoint: http://127.0.0.1:9000
+      public-endpoint: http://127.0.0.1:9000
+      access-key: minioadmin
+      secret-key: minioadmin
+      region: us-east-1
+      create-bucket-if-missing: true
