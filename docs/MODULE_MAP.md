@@ -54,7 +54,7 @@
 | `getboot-governance` | 流量治理 | 需要 Sentinel 接入抽象和统一配置前缀时 | `getboot-http-client` | `getboot.governance.*` | `sentinel` | [getboot-governance/README.md](../getboot-governance/README.md) |
 | `getboot-transaction` | 分布式事务 | 需要 Seata，且想把配置和兼容保护收口到模块内时 | `getboot-database` | `getboot.transaction.*` | `seata` | [getboot-transaction/README.md](../getboot-transaction/README.md) |
 | `getboot-webhook` | 回调安全编排 | 需要统一处理回调验签、限流、幂等、分布式锁时 | `getboot-cache` / `getboot-coordination` / `getboot-limiter` | `getboot.webhook.security.*` | `servlet` | [getboot-webhook/README.md](../getboot-webhook/README.md) |
-| `getboot-http-client` | 出站 HTTP 客户端 | 需要 Feign、WebClient、RestTemplate 出站透传请求头和 `traceId` 时 | `getboot-observability` | `getboot.http-client.*` | `feign` / `webclient` / `resttemplate` | [getboot-http-client/README.md](../getboot-http-client/README.md) |
+| `getboot-http-client` | 出站 HTTP 客户端 | 需要 Feign、WebClient、RestTemplate 出站透传请求头和 `traceId` 时 | `getboot-observability` | `getboot.http-client.*` | `headers.common` / `feign` / `webclient` / `resttemplate` | [getboot-http-client/README.md](../getboot-http-client/README.md) |
 | `getboot-rpc` | 远程调用 | 需要 Dubbo Trace 透传、请求签名校验、序列化安全时 | `getboot-observability` | `getboot.rpc.trace.*` / `getboot.rpc.security.*` / `getboot.rpc.dubbo.*` | `dubbo` | [getboot-rpc/README.md](../getboot-rpc/README.md) |
 | `getboot-mq` | 消息能力 | 需要 RocketMQ / Kafka 统一生产入口、Trace 透传，或 RocketMQ 事务消息路由时 | `getboot-observability` | `getboot.mq.*` | `rocketmq` / `kafka` | [getboot-mq/README.md](../getboot-mq/README.md) |
 | `getboot-job` | 调度能力 | 需要 XXL-JOB 执行器自动装配和管理端客户端时 | 无强制配套模块 | `getboot.job.*` | `xxl` | [getboot-job/README.md](../getboot-job/README.md) |
@@ -76,8 +76,8 @@
 
 ## 5. 已明确的后续扩展方向
 
-- `getboot-http-client`
-  继续评估更通用的客户端封装或新的实现子树
+- `getboot-observability`
+  持续补可观测性桥接实现
 - `getboot-payment`
   持续围绕 `alipay` / `wechatpay` 两条实现子树演进
 

@@ -17,6 +17,7 @@ package com.getboot.httpclient.infrastructure.resttemplate.autoconfigure;
 
 import com.getboot.httpclient.api.properties.RestTemplateTraceProperties;
 import com.getboot.httpclient.infrastructure.resttemplate.support.TraceRestTemplateInterceptor;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.httpclient.spi.resttemplate.RestTemplateTraceRequestCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -53,8 +54,13 @@ public class RestTemplateHttpClientAutoConfiguration {
     @ConditionalOnMissingBean(name = "getbootTraceRestTemplateInterceptor")
     public ClientHttpRequestInterceptor getbootTraceRestTemplateInterceptor(
             RestTemplateTraceProperties properties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             ObjectProvider<RestTemplateTraceRequestCustomizer> customizers) {
-        return new TraceRestTemplateInterceptor(properties, customizers.orderedStream().toList());
+        return new TraceRestTemplateInterceptor(
+                properties,
+                outboundHttpHeadersResolver,
+                customizers.orderedStream().toList()
+        );
     }
 
     /**

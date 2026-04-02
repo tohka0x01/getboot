@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.getboot.httpclient.spi.feign;
-
-import feign.RequestTemplate;
+package com.getboot.httpclient.api.model;
 
 /**
- * OpenFeign Trace 请求定制器。
+ * 出站 HTTP 客户端类型。
  *
- * <p>业务方可通过注册该类型 Bean，在透传 TraceId 后继续补充 OpenFeign 专属请求定制逻辑。</p>
+ * <p>用于在模块通用出站头扩展点中区分当前请求来自哪一类客户端实现。</p>
  *
  * @author qiheng
  */
-@FunctionalInterface
-public interface OpenFeignTraceRequestCustomizer {
+public enum OutboundHttpClientType {
 
     /**
-     * 定制 Feign 出站请求。
-     *
-     * @param requestTemplate Feign 请求模板
-     * @param traceId 当前 TraceId
-     * @param traceHeaderName Trace 请求头名称
+     * OpenFeign 客户端。
      */
-    void customize(RequestTemplate requestTemplate, String traceId, String traceHeaderName);
+    OPEN_FEIGN,
+
+    /**
+     * WebClient 客户端。
+     */
+    WEB_CLIENT,
+
+    /**
+     * RestTemplate 客户端。
+     */
+    REST_TEMPLATE
 }

@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.getboot.httpclient.spi.feign;
+package com.getboot.httpclient.spi;
 
-import feign.RequestTemplate;
+import com.getboot.httpclient.api.model.OutboundHttpRequestContext;
+import org.springframework.http.HttpHeaders;
 
 /**
- * OpenFeign Trace 请求定制器。
+ * 通用出站 HTTP 请求头贡献器。
  *
- * <p>业务方可通过注册该类型 Bean，在透传 TraceId 后继续补充 OpenFeign 专属请求定制逻辑。</p>
+ * <p>适用于租户标识、应用标识、语言环境等不依赖具体客户端类型的公共请求头增强。</p>
  *
  * @author qiheng
  */
 @FunctionalInterface
-public interface OpenFeignTraceRequestCustomizer {
+public interface OutboundHttpHeadersContributor {
 
     /**
-     * 定制 Feign 出站请求。
+     * 向当前出站请求补充请求头。
      *
-     * @param requestTemplate Feign 请求模板
-     * @param traceId 当前 TraceId
-     * @param traceHeaderName Trace 请求头名称
+     * @param headers 待写入的请求头
+     * @param context 当前出站请求上下文
      */
-    void customize(RequestTemplate requestTemplate, String traceId, String traceHeaderName);
+    void contribute(HttpHeaders headers, OutboundHttpRequestContext context);
 }

@@ -17,6 +17,7 @@ package com.getboot.httpclient.infrastructure.webclient.autoconfigure;
 
 import com.getboot.httpclient.api.properties.WebClientTraceProperties;
 import com.getboot.httpclient.infrastructure.webclient.support.TraceWebClientFilterFunction;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.httpclient.spi.webclient.WebClientTraceRequestCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -52,8 +53,13 @@ public class WebClientHttpClientAutoConfiguration {
     @ConditionalOnMissingBean(name = "getbootTraceWebClientFilterFunction")
     public ExchangeFilterFunction getbootTraceWebClientFilterFunction(
             WebClientTraceProperties properties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             ObjectProvider<WebClientTraceRequestCustomizer> customizers) {
-        return new TraceWebClientFilterFunction(properties, customizers.orderedStream().toList());
+        return new TraceWebClientFilterFunction(
+                properties,
+                outboundHttpHeadersResolver,
+                customizers.orderedStream().toList()
+        );
     }
 
     /**

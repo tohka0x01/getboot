@@ -15,9 +15,13 @@
  */
 package com.getboot.httpclient.infrastructure.webclient.support;
 
+import com.getboot.httpclient.api.model.OutboundHttpClientType;
+import com.getboot.httpclient.api.model.OutboundHttpRequestContext;
 import com.getboot.httpclient.api.properties.WebClientTraceProperties;
 import com.getboot.httpclient.spi.webclient.WebClientTraceRequestCustomizer;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.support.api.trace.TraceContextHolder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -37,27 +41,37 @@ import java.util.List;
 public class TraceWebClientFilterFunction implements ExchangeFilterFunction {
 
     private final WebClientTraceProperties properties;
+    private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
     private final List<WebClientTraceRequestCustomizer> customizers;
 
     public TraceWebClientFilterFunction(
             WebClientTraceProperties properties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             List<WebClientTraceRequestCustomizer> customizers) {
         this.properties = properties;
+        this.outboundHttpHeadersResolver = outboundHttpHeadersResolver;
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
     @Override
     public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         String traceId = TraceContextHolder.getTraceId();
-        if (!StringUtils.hasText(traceId)) {
+        String traceHeaderName = properties.getHeaderName();
+        HttpHeaders resolvedHeaders = outboundHttpHeadersResolver.resolve(
+                new OutboundHttpRequestContext(OutboundHttpClientType.WEB_CLIENT, traceId, traceHeaderName)
+        );
+        if (resolvedHeaders.isEmpty() && !StringUtils.hasText(traceId)) {
             return next.exchange(request);
         }
-        String traceHeaderName = properties.getHeaderName();
         ClientRequest.Builder requestBuilder = ClientRequest.from(request);
         requestBuilder.headers(headers -> {
-            headers.remove(traceHeaderName);
-            headers.add(traceHeaderName, traceId);
-            customizers.forEach(customizer -> customizer.customize(headers, request, traceId, traceHeaderName));
+            resolvedHeaders.forEach((headerName, values) -> {
+                headers.remove(headerName);
+                headers.addAll(headerName, values);
+            });
+            if (StringUtils.hasText(traceId)) {
+                customizers.forEach(customizer -> customizer.customize(headers, request, traceId, traceHeaderName));
+            }
         });
         return next.exchange(requestBuilder.build());
     }

@@ -21,7 +21,7 @@ import org.springframework.http.HttpRequest;
 /**
  * RestTemplate Trace 请求定制器。
  *
- * <p>业务方可通过注册该类型 Bean，在透传 TraceId 后继续补充出站请求头。</p>
+ * <p>业务方可通过注册该类型 Bean，在透传 TraceId 后继续补充 RestTemplate 专属请求定制逻辑。</p>
  *
  * @author qiheng
  */

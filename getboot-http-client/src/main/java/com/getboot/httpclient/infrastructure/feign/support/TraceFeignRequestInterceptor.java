@@ -15,11 +15,15 @@
  */
 package com.getboot.httpclient.infrastructure.feign.support;
 
+import com.getboot.httpclient.api.model.OutboundHttpClientType;
+import com.getboot.httpclient.api.model.OutboundHttpRequestContext;
 import com.getboot.httpclient.api.properties.OpenFeignTraceProperties;
 import com.getboot.httpclient.spi.feign.OpenFeignTraceRequestCustomizer;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.support.api.trace.TraceContextHolder;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -34,24 +38,32 @@ import java.util.List;
 public class TraceFeignRequestInterceptor implements RequestInterceptor {
 
     private final OpenFeignTraceProperties traceProperties;
+    private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
     private final List<OpenFeignTraceRequestCustomizer> customizers;
 
     public TraceFeignRequestInterceptor(
             OpenFeignTraceProperties traceProperties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             List<OpenFeignTraceRequestCustomizer> customizers) {
         this.traceProperties = traceProperties;
+        this.outboundHttpHeadersResolver = outboundHttpHeadersResolver;
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
         String traceId = TraceContextHolder.getTraceId();
+        String traceHeaderName = traceProperties.getHeaderName();
+        HttpHeaders headers = outboundHttpHeadersResolver.resolve(
+                new OutboundHttpRequestContext(OutboundHttpClientType.OPEN_FEIGN, traceId, traceHeaderName)
+        );
+        headers.forEach((headerName, values) -> {
+            requestTemplate.removeHeader(headerName);
+            requestTemplate.header(headerName, values.toArray(String[]::new));
+        });
         if (!StringUtils.hasText(traceId)) {
             return;
         }
-        String traceHeaderName = traceProperties.getHeaderName();
-        requestTemplate.removeHeader(traceHeaderName);
-        requestTemplate.header(traceHeaderName, traceId);
         customizers.forEach(customizer -> customizer.customize(requestTemplate, traceId, traceHeaderName));
     }
 }

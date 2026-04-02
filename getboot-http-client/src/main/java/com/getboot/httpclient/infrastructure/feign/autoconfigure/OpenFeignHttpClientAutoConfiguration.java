@@ -17,6 +17,7 @@ package com.getboot.httpclient.infrastructure.feign.autoconfigure;
 
 import com.getboot.httpclient.api.properties.OpenFeignTraceProperties;
 import com.getboot.httpclient.infrastructure.feign.support.TraceFeignRequestInterceptor;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.httpclient.spi.feign.OpenFeignTraceRequestCustomizer;
 import feign.RequestInterceptor;
 import org.springframework.beans.factory.ObjectProvider;
@@ -51,7 +52,12 @@ public class OpenFeignHttpClientAutoConfiguration {
     @ConditionalOnMissingBean(name = "getbootTraceFeignRequestInterceptor")
     public RequestInterceptor getbootTraceFeignRequestInterceptor(
             OpenFeignTraceProperties traceProperties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             ObjectProvider<OpenFeignTraceRequestCustomizer> customizers) {
-        return new TraceFeignRequestInterceptor(traceProperties, customizers.orderedStream().toList());
+        return new TraceFeignRequestInterceptor(
+                traceProperties,
+                outboundHttpHeadersResolver,
+                customizers.orderedStream().toList()
+        );
     }
 }

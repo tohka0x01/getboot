@@ -15,9 +15,13 @@
  */
 package com.getboot.httpclient.infrastructure.resttemplate.support;
 
+import com.getboot.httpclient.api.model.OutboundHttpClientType;
+import com.getboot.httpclient.api.model.OutboundHttpRequestContext;
 import com.getboot.httpclient.api.properties.RestTemplateTraceProperties;
 import com.getboot.httpclient.spi.resttemplate.RestTemplateTraceRequestCustomizer;
+import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.support.api.trace.TraceContextHolder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -37,12 +41,15 @@ import java.util.List;
 public class TraceRestTemplateInterceptor implements ClientHttpRequestInterceptor {
 
     private final RestTemplateTraceProperties properties;
+    private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
     private final List<RestTemplateTraceRequestCustomizer> customizers;
 
     public TraceRestTemplateInterceptor(
             RestTemplateTraceProperties properties,
+            OutboundHttpHeadersResolver outboundHttpHeadersResolver,
             List<RestTemplateTraceRequestCustomizer> customizers) {
         this.properties = properties;
+        this.outboundHttpHeadersResolver = outboundHttpHeadersResolver;
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
@@ -52,10 +59,15 @@ public class TraceRestTemplateInterceptor implements ClientHttpRequestIntercepto
             byte[] body,
             ClientHttpRequestExecution execution) throws IOException {
         String traceId = TraceContextHolder.getTraceId();
+        String traceHeaderName = properties.getHeaderName();
+        HttpHeaders resolvedHeaders = outboundHttpHeadersResolver.resolve(
+                new OutboundHttpRequestContext(OutboundHttpClientType.REST_TEMPLATE, traceId, traceHeaderName)
+        );
+        resolvedHeaders.forEach((headerName, values) -> {
+            request.getHeaders().remove(headerName);
+            request.getHeaders().addAll(headerName, values);
+        });
         if (StringUtils.hasText(traceId)) {
-            String traceHeaderName = properties.getHeaderName();
-            request.getHeaders().remove(traceHeaderName);
-            request.getHeaders().add(traceHeaderName, traceId);
             customizers.forEach(customizer -> customizer.customize(request.getHeaders(), request, traceId, traceHeaderName));
         }
         return execution.execute(request, body);

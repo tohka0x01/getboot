@@ -301,7 +301,7 @@ transportMode: "NIO"
 ### Communication
 
 - [`getboot-http-client`](./getboot-http-client/README.md)
-  OpenFeign、WebClient、RestTemplate 的 Trace 透传增强
+  OpenFeign、WebClient、RestTemplate 的出站请求头增强与 Trace 透传
 - [`getboot-rpc`](./getboot-rpc/README.md)
   Dubbo 安全增强、Trace 透传、配置适配
 - [`getboot-mq`](./getboot-mq/README.md)
@@ -367,7 +367,7 @@ transportMode: "NIO"
 
 后续会继续围绕“新项目常见基础能力”推进，优先关注：
 
-- `getboot-http-client` 评估更通用的客户端封装或新的实现子树
+- `getboot-observability` 持续补可观测性桥接实现
 - `getboot-ai`、`getboot-storage`、`getboot-search`、`getboot-sms` 等新能力规划
 
 具体路线继续收敛在 [`docs/TODO.md`](./docs/TODO.md)。
