@@ -23,6 +23,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
+import java.util.function.Supplier;
 
 /**
  * Trace 任务装饰器后处理器。
@@ -33,20 +34,24 @@ import java.lang.reflect.Field;
  */
 public class TraceTaskDecoratorBeanPostProcessor implements BeanPostProcessor {
 
-    private final TaskDecorator taskDecorator;
+    private final Supplier<TaskDecorator> taskDecoratorSupplier;
 
     public TraceTaskDecoratorBeanPostProcessor(TaskDecorator taskDecorator) {
-        this.taskDecorator = taskDecorator;
+        this(() -> taskDecorator);
+    }
+
+    public TraceTaskDecoratorBeanPostProcessor(Supplier<TaskDecorator> taskDecoratorSupplier) {
+        this.taskDecoratorSupplier = taskDecoratorSupplier;
     }
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof ThreadPoolTaskExecutor taskExecutor && !hasTaskDecorator(taskExecutor, ThreadPoolTaskExecutor.class)) {
-            taskExecutor.setTaskDecorator(taskDecorator);
+            taskExecutor.setTaskDecorator(taskDecoratorSupplier.get());
             return bean;
         }
         if (bean instanceof SimpleAsyncTaskExecutor taskExecutor && !hasTaskDecorator(taskExecutor, SimpleAsyncTaskExecutor.class)) {
-            taskExecutor.setTaskDecorator(taskDecorator);
+            taskExecutor.setTaskDecorator(taskDecoratorSupplier.get());
             return bean;
         }
         return bean;

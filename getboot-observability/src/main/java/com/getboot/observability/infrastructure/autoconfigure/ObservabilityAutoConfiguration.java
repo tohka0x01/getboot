@@ -21,12 +21,16 @@ import com.getboot.observability.support.TraceTaskDecoratorBeanPostProcessor;
 import com.getboot.observability.support.UuidTraceIdGenerator;
 import com.getboot.observability.spi.TraceIdGenerator;
 import io.micrometer.context.ContextSnapshotFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskDecorator;
+
+import java.util.function.Supplier;
 
 /**
  * 可观测性基础自动配置。
@@ -73,7 +77,9 @@ public class ObservabilityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "getboot.observability.trace", name = "async-propagation-enabled", havingValue = "true", matchIfMissing = true)
-    public TraceTaskDecoratorBeanPostProcessor traceTaskDecoratorBeanPostProcessor(TaskDecorator taskDecorator) {
-        return new TraceTaskDecoratorBeanPostProcessor(taskDecorator);
+    public static TraceTaskDecoratorBeanPostProcessor traceTaskDecoratorBeanPostProcessor(
+            @Qualifier("getbootTraceTaskDecorator") ObjectProvider<TaskDecorator> taskDecoratorProvider) {
+        Supplier<TaskDecorator> taskDecoratorSupplier = taskDecoratorProvider::getObject;
+        return new TraceTaskDecoratorBeanPostProcessor(taskDecoratorSupplier);
     }
 }

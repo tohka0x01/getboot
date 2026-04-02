@@ -106,6 +106,7 @@ getboot:
 - SkyWalking 桥接同时覆盖 `TraceIdResolver` / `ReactiveTraceIdResolver` 与 `TraceContextCustomizer` / `ReactiveTraceContextCustomizer`
 - 当前链路 TraceId 会写入 `getboot-support` 提供的 `TraceContextHolder`，供 Dubbo、Feign、MQ 等下游组件继续透传
 - `@Async`、`ThreadPoolTaskExecutor`、`SimpleAsyncTaskExecutor` 默认会自动透传 Trace 上下文；若直接使用手工线程池，可通过 `TraceContextPropagationSupport.wrap(...)` 包装任务
+- 如需替换默认异步 Trace 装饰器，可直接声明同名 Bean `getbootTraceTaskDecorator`；如需组合其他装饰逻辑，建议在执行器上显式设置 `TaskDecorator`
 
 ## 已实现技术栈
 
