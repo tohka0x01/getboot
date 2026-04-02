@@ -15,8 +15,7 @@
  */
 package com.getboot.web.api.request;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -26,9 +25,8 @@ import java.io.Serializable;
  *
  * @author qiheng
  */
-@Getter
-@Setter
-public class PagingRequest extends RequestPayload implements Serializable {
+@Data
+public class PagingRequest implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 

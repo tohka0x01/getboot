@@ -69,6 +69,20 @@ Foundation 模块允许更轻量，但也必须保证“稳定层和实现层”
 - 不把底层 SDK 类型直接抛给业务代码
 - 除非模块 README 明确说明，否则外部项目不应直接依赖 `support` / `infrastructure`
 
+### 3.4 注释与日志语言约定
+
+- 代码注释、类注释、方法注释默认使用中文，优先降低仓库维护者的阅读门槛
+- 日志、异常消息、对外返回的技术性错误描述优先使用英文，便于统一检索、国际化和跨团队排障
+- 如果某段注释必须引用第三方术语，先用中文说清语义，再保留必要英文名词
+
+### 3.5 Lombok 约定
+
+- 仓库统一使用根目录 [`lombok.config`](./lombok.config) 作为 Lombok 配置入口，不在模块内各自维护零散配置
+- `request`、`response`、`properties`、`dto`、`item` 这类纯数据载体，默认直接使用 Lombok，不再重复手写 getter / setter / equals / hashCode / toString
+- 纯可变载体默认优先使用 `@Data`；只有需要限制方法暴露范围、定制只读行为，或存在明确业务逻辑时，才退回 `@Getter` / `@Setter` 或手写方法
+- 带有显式拷贝、防御性赋值、参数归一化的 setter 可以保留手写实现，但其余访问器仍应交给 Lombok 生成
+- 模块一旦使用 Lombok 注解，模块 `pom.xml` 里必须显式声明 `org.projectlombok:lombok` 的 `provided` 依赖，避免 IDE 和 Maven 表现不一致
+
 ## 4. 依赖方向
 
 总体依赖方向固定为：
