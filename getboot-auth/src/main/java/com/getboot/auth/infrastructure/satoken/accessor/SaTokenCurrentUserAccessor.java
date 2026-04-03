@@ -30,8 +30,18 @@ import com.getboot.exception.api.exception.BusinessException;
  */
 public class SaTokenCurrentUserAccessor implements CurrentUserAccessor {
 
+    /**
+     * 会话中存储用户对象的键名。
+     */
     private static final String USER_INFO_SESSION_KEY = "userInfo";
 
+    /**
+     * 读取当前登录用户对象。
+     *
+     * @param userType 目标用户类型
+     * @param <T> 用户对象类型
+     * @return 当前登录用户对象
+     */
     @Override
     public <T> T getCurrentUser(Class<T> userType) {
         Object userInfo;
@@ -53,6 +63,11 @@ public class SaTokenCurrentUserAccessor implements CurrentUserAccessor {
         }
     }
 
+    /**
+     * 读取当前登录用户 ID。
+     *
+     * @return 当前登录用户 ID
+     */
     @Override
     public Long getCurrentUserId() {
         try {

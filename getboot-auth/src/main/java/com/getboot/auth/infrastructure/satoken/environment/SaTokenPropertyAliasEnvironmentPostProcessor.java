@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class SaTokenPropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回 Sa-Token 别名属性源名称。
+     *
+     * @return 属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootAuthSatokenAliasedProperties";
     }
 
+    /**
+     * 注册 GetBoot Sa-Token 前缀到 Sa-Token 原生前缀的映射。
+     *
+     * @param environment 当前环境
+     * @param aliasedProperties 别名属性容器
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(environment, aliasedProperties, "getboot.auth.satoken.", "sa-token.");
