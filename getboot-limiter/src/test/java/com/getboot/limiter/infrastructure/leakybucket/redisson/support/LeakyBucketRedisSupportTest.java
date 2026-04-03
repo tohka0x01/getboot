@@ -29,8 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * 漏桶 Redis 支撑组件测试。
+ */
 class LeakyBucketRedisSupportTest {
 
+    /**
+     * 验证水位仍然满时会拒绝请求。
+     */
     @Test
     void shouldRejectWhenBucketStillFull() {
         FakeLeakyBucketState state = new FakeLeakyBucketState();
@@ -45,6 +51,9 @@ class LeakyBucketRedisSupportTest {
         assertEquals("rate_limiter_leaky_bucket:login:lock", state.lastLockName);
     }
 
+    /**
+     * 验证下一次请求前会先执行漏水。
+     */
     @Test
     void shouldLeakWaterBeforeNextAcquire() {
         FakeLeakyBucketState state = new FakeLeakyBucketState();
@@ -65,6 +74,9 @@ class LeakyBucketRedisSupportTest {
         assertEquals(TimeUnit.MILLISECONDS, state.ttlUnit);
     }
 
+    /**
+     * 验证无法获取锁时会直接返回失败。
+     */
     @Test
     void shouldReturnFalseWhenLockCannotBeAcquired() {
         FakeLeakyBucketState state = new FakeLeakyBucketState();
@@ -77,6 +89,12 @@ class LeakyBucketRedisSupportTest {
         assertEquals(null, state.bucketValue);
     }
 
+    /**
+     * 创建测试用 Redisson 客户端代理。
+     *
+     * @param state 漏桶测试状态
+     * @return Redisson 客户端
+     */
     private static RedissonClient redissonClient(FakeLeakyBucketState state) {
         RBucket<String> bucket = bucket(state);
         RLock lock = lock(state);
@@ -102,6 +120,12 @@ class LeakyBucketRedisSupportTest {
         );
     }
 
+    /**
+     * 创建测试用 RBucket 代理。
+     *
+     * @param state 漏桶测试状态
+     * @return RBucket 代理
+     */
     @SuppressWarnings("unchecked")
     private static RBucket<String> bucket(FakeLeakyBucketState state) {
         return (RBucket<String>) Proxy.newProxyInstance(
@@ -125,6 +149,12 @@ class LeakyBucketRedisSupportTest {
         );
     }
 
+    /**
+     * 创建测试用 RLock 代理。
+     *
+     * @param state 漏桶测试状态
+     * @return RLock 代理
+     */
     private static RLock lock(FakeLeakyBucketState state) {
         return (RLock) Proxy.newProxyInstance(
                 RLock.class.getClassLoader(),
@@ -150,6 +180,12 @@ class LeakyBucketRedisSupportTest {
         );
     }
 
+    /**
+     * 创建测试用 RKeys 代理。
+     *
+     * @param state 漏桶测试状态
+     * @return RKeys 代理
+     */
     private static RKeys keys(FakeLeakyBucketState state) {
         return (RKeys) Proxy.newProxyInstance(
                 RKeys.class.getClassLoader(),
@@ -167,14 +203,49 @@ class LeakyBucketRedisSupportTest {
         );
     }
 
+    /**
+     * 漏桶测试状态。
+     */
     private static final class FakeLeakyBucketState {
+
+        /**
+         * 锁是否可获取。
+         */
         private boolean lockAvailable = true;
+
+        /**
+         * 当前是否已持有锁。
+         */
         private boolean locked;
+
+        /**
+         * 持久化的桶状态字符串。
+         */
         private String bucketValue;
+
+        /**
+         * 最近一次 bucket key。
+         */
         private String lastBucketName;
+
+        /**
+         * 最近一次 lock key。
+         */
         private String lastLockName;
+
+        /**
+         * 最近一次 TTL 值。
+         */
         private long ttl;
+
+        /**
+         * 最近一次 TTL 单位。
+         */
         private TimeUnit ttlUnit;
+
+        /**
+         * 删除调用次数。
+         */
         private int deleteCalls;
     }
 }

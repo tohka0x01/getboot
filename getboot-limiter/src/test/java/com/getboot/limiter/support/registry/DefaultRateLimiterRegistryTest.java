@@ -28,8 +28,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * 默认限流注册表测试。
+ */
 class DefaultRateLimiterRegistryTest {
 
+    /**
+     * 验证预定义限流器会路由到对应算法处理器。
+     */
     @Test
     void shouldRoutePredefinedLimiterToMatchingAlgorithm() {
         FakeHandler slidingWindowHandler = new FakeHandler(LimiterAlgorithm.SLIDING_WINDOW, Map.of());
@@ -47,6 +53,9 @@ class DefaultRateLimiterRegistryTest {
         assertEquals(LimiterAlgorithm.TOKEN_BUCKET, tokenBucketHandler.lastRule.getAlgorithm());
     }
 
+    /**
+     * 验证配置规则时缺省算法会回退到滑动窗口。
+     */
     @Test
     void shouldDefaultMissingAlgorithmToSlidingWindowWhenConfiguringRule() {
         FakeHandler slidingWindowHandler = new FakeHandler(LimiterAlgorithm.SLIDING_WINDOW, Map.of());
@@ -66,6 +75,9 @@ class DefaultRateLimiterRegistryTest {
         assertEquals(LimiterAlgorithm.SLIDING_WINDOW, slidingWindowHandler.lastRule.getAlgorithm());
     }
 
+    /**
+     * 验证预定义限流器名称跨算法重复时会快速失败。
+     */
     @Test
     void shouldFailFastWhenPredefinedLimiterNameDuplicatedAcrossAlgorithms() {
         FakeHandler slidingWindowHandler = new FakeHandler(
@@ -83,6 +95,9 @@ class DefaultRateLimiterRegistryTest {
         assertTrue(exception.getMessage().contains("duplicate"));
     }
 
+    /**
+     * 验证运行时规则在未预配置时也能正确路由。
+     */
     @Test
     void shouldRouteRuntimeRuleWithoutPreconfiguration() {
         FakeHandler slidingWindowHandler = new FakeHandler(LimiterAlgorithm.SLIDING_WINDOW, Map.of());
@@ -103,6 +118,15 @@ class DefaultRateLimiterRegistryTest {
         assertEquals(LimiterAlgorithm.TOKEN_BUCKET, tokenBucketHandler.lastRule.getAlgorithm());
     }
 
+    /**
+     * 创建测试用限流规则。
+     *
+     * @param algorithm 限流算法
+     * @param rate 速率阈值
+     * @param interval 时间窗口大小
+     * @param intervalUnit 时间窗口单位
+     * @return 限流规则
+     */
     private static LimiterRule rule(LimiterAlgorithm algorithm, long rate, long interval, String intervalUnit) {
         LimiterRule limiterRule = new LimiterRule();
         limiterRule.setAlgorithm(algorithm);
@@ -112,43 +136,103 @@ class DefaultRateLimiterRegistryTest {
         return limiterRule;
     }
 
+    /**
+     * 测试用算法处理器。
+     */
     private static final class FakeHandler implements RateLimiterAlgorithmHandler {
 
+        /**
+         * 处理器算法类型。
+         */
         private final LimiterAlgorithm algorithm;
+
+        /**
+         * 预定义规则集合。
+         */
         private final Map<String, LimiterRule> predefinedRules;
+
+        /**
+         * 默认规则。
+         */
         private final LimiterRule defaultRule;
 
+        /**
+         * tryAcquire 调用次数。
+         */
         private int tryAcquireCalls;
+
+        /**
+         * 最近一次限流器名称。
+         */
         private String lastLimiterName;
+
+        /**
+         * 最近一次规则快照。
+         */
         private LimiterRule lastRule;
+
+        /**
+         * 最近一次许可数量。
+         */
         private long lastPermits;
 
+        /**
+         * 创建测试用算法处理器。
+         *
+         * @param algorithm 算法类型
+         * @param predefinedRules 预定义规则
+         */
         private FakeHandler(LimiterAlgorithm algorithm, Map<String, LimiterRule> predefinedRules) {
             this.algorithm = algorithm;
             this.predefinedRules = predefinedRules;
             this.defaultRule = rule(algorithm, 10, 1, "SECONDS");
         }
 
+        /**
+         * 返回处理器算法类型。
+         *
+         * @return 算法类型
+         */
         @Override
         public LimiterAlgorithm algorithm() {
             return algorithm;
         }
 
+        /**
+         * 返回预定义规则集合。
+         *
+         * @return 预定义规则集合
+         */
         @Override
         public Map<String, LimiterRule> predefinedRules() {
             return predefinedRules;
         }
 
+        /**
+         * 返回默认规则副本。
+         *
+         * @return 默认规则
+         */
         @Override
         public LimiterRule defaultRule() {
             return defaultRule.copy();
         }
 
+        /**
+         * 返回默认等待时长。
+         *
+         * @return 默认等待秒数
+         */
         @Override
         public long defaultTimeout() {
             return 1;
         }
 
+        /**
+         * 校验规则是否与处理器算法一致。
+         *
+         * @param rule 限流规则
+         */
         @Override
         public void validateRule(LimiterRule rule) {
             if (rule.getAlgorithm() != algorithm) {
@@ -159,6 +243,14 @@ class DefaultRateLimiterRegistryTest {
             }
         }
 
+        /**
+         * 记录一次许可申请。
+         *
+         * @param limiterName 限流器名称
+         * @param rule 限流规则
+         * @param permits 许可数量
+         * @return 始终返回成功
+         */
         @Override
         public boolean tryAcquire(String limiterName, LimiterRule rule, long permits) {
             this.tryAcquireCalls++;
@@ -168,6 +260,12 @@ class DefaultRateLimiterRegistryTest {
             return true;
         }
 
+        /**
+         * 删除限流器状态。
+         *
+         * @param limiterName 限流器名称
+         * @return 始终返回成功
+         */
         @Override
         public boolean delete(String limiterName) {
             return true;

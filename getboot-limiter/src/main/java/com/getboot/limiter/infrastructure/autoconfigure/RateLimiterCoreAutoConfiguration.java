@@ -41,6 +41,13 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnProperty(prefix = "getboot.limiter", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RateLimiterCoreAutoConfiguration {
 
+    /**
+     * 注册限流注册表。
+     *
+     * @param algorithmHandlers 算法处理器集合
+     * @param registryCustomizers 注册表定制器集合
+     * @return 限流注册表
+     */
     @Bean
     @ConditionalOnMissingBean
     public RateLimiterRegistry rateLimiterRegistry(
@@ -52,12 +59,24 @@ public class RateLimiterCoreAutoConfiguration {
         return registry;
     }
 
+    /**
+     * 注册限流操作解析器。
+     *
+     * @return 限流操作解析器
+     */
     @Bean
     @ConditionalOnMissingBean
     public RateLimitOperationResolver rateLimitOperationResolver() {
         return new RateLimitOperationResolver();
     }
 
+    /**
+     * 注册方法级限流切面。
+     *
+     * @param rateLimiterRegistry 限流注册表
+     * @param rateLimitOperationResolver 限流操作解析器
+     * @return 限流切面
+     */
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnClass(name = "org.aspectj.lang.ProceedingJoinPoint")

@@ -44,6 +44,13 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(SlidingWindowRateLimiterProperties.class)
 public class RateLimiterAutoConfiguration {
 
+    /**
+     * 注册滑动窗口 Redis 支撑组件。
+     *
+     * @param redissonClient Redisson 客户端
+     * @param properties 滑动窗口配置
+     * @return Redis 支撑组件
+     */
     @Bean
     @ConditionalOnMissingBean
     public SlidingWindowRedisSupport slidingWindowRedisSupport(RedissonClient redissonClient,
@@ -51,6 +58,13 @@ public class RateLimiterAutoConfiguration {
         return new SlidingWindowRedisSupport(redissonClient, properties.getKeyPrefix());
     }
 
+    /**
+     * 注册滑动窗口算法处理器。
+     *
+     * @param slidingWindowRedisSupport Redis 支撑组件
+     * @param properties 滑动窗口配置
+     * @return 算法处理器
+     */
     @Bean
     @ConditionalOnMissingBean(name = "redissonSlidingWindowRateLimiterHandler")
     public RateLimiterAlgorithmHandler redissonSlidingWindowRateLimiterHandler(
@@ -59,6 +73,12 @@ public class RateLimiterAutoConfiguration {
         return new RedissonSlidingWindowRateLimiterHandler(slidingWindowRedisSupport, properties);
     }
 
+    /**
+     * 注册滑动窗口限流器适配器。
+     *
+     * @param slidingWindowRedisSupport Redis 支撑组件
+     * @return 限流器适配器
+     */
     @Bean
     @ConditionalOnMissingBean
     public RateLimiter redissonSlidingWindowRateLimiter(SlidingWindowRedisSupport slidingWindowRedisSupport) {

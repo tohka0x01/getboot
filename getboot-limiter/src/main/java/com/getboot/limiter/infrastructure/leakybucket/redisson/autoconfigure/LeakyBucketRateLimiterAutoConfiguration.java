@@ -42,6 +42,13 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(LeakyBucketRateLimiterProperties.class)
 public class LeakyBucketRateLimiterAutoConfiguration {
 
+    /**
+     * 注册漏桶 Redis 支撑组件。
+     *
+     * @param redissonClient Redisson 客户端
+     * @param properties 漏桶配置
+     * @return Redis 支撑组件
+     */
     @Bean
     @ConditionalOnMissingBean
     public LeakyBucketRedisSupport leakyBucketRedisSupport(RedissonClient redissonClient,
@@ -49,6 +56,13 @@ public class LeakyBucketRateLimiterAutoConfiguration {
         return new LeakyBucketRedisSupport(redissonClient, properties.getKeyPrefix());
     }
 
+    /**
+     * 注册漏桶算法处理器。
+     *
+     * @param leakyBucketRedisSupport Redis 支撑组件
+     * @param properties 漏桶配置
+     * @return 算法处理器
+     */
     @Bean
     @ConditionalOnMissingBean(name = "redissonLeakyBucketRateLimiterHandler")
     public RateLimiterAlgorithmHandler redissonLeakyBucketRateLimiterHandler(

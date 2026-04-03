@@ -51,14 +51,30 @@ public class LimiterRule {
      */
     private String intervalUnit = "SECONDS";
 
+    /**
+     * 解析最终使用的限流算法。
+     *
+     * @param fallback 兜底算法
+     * @return 最终算法
+     */
     public LimiterAlgorithm resolveAlgorithm(LimiterAlgorithm fallback) {
         return algorithm != null ? algorithm : fallback;
     }
 
+    /**
+     * 解析时间窗口单位。
+     *
+     * @return 时间窗口单位
+     */
     public TimeUnit resolveIntervalUnit() {
         return TimeUnit.valueOf(intervalUnit);
     }
 
+    /**
+     * 复制当前规则对象。
+     *
+     * @return 复制后的规则
+     */
     public LimiterRule copy() {
         LimiterRule copied = new LimiterRule();
         copied.setAlgorithm(this.algorithm);

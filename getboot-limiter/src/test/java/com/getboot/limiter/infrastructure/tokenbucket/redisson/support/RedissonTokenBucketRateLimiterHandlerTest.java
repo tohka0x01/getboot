@@ -31,8 +31,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * 令牌桶算法处理器测试。
+ */
 class RedissonTokenBucketRateLimiterHandlerTest {
 
+    /**
+     * 验证能够初始化并获取令牌。
+     */
     @Test
     void shouldConfigureRateLimiterAndAcquirePermits() {
         TokenBucketLimiterState state = new TokenBucketLimiterState();
@@ -52,6 +58,9 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         assertEquals("rate_limiter_token_bucket:login:bucket", state.lastLimiterName);
     }
 
+    /**
+     * 验证规则变化时会刷新远端配置。
+     */
     @Test
     void shouldRefreshRemoteConfigWhenRuleChanges() {
         TokenBucketLimiterState state = new TokenBucketLimiterState();
@@ -70,6 +79,9 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         assertEquals(RateIntervalUnit.MINUTES, state.intervalUnit);
     }
 
+    /**
+     * 验证不支持的时间单位会被拒绝。
+     */
     @Test
     void shouldRejectUnsupportedTokenBucketIntervalUnit() {
         TokenBucketLimiterState state = new TokenBucketLimiterState();
@@ -85,6 +97,14 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         assertTrue(exception.getMessage().contains("MICROSECONDS"));
     }
 
+    /**
+     * 创建测试用限流规则。
+     *
+     * @param rate 速率阈值
+     * @param interval 时间窗口大小
+     * @param intervalUnit 时间窗口单位
+     * @return 限流规则
+     */
     private static LimiterRule rule(long rate, long interval, String intervalUnit) {
         LimiterRule limiterRule = new LimiterRule();
         limiterRule.setAlgorithm(LimiterAlgorithm.TOKEN_BUCKET);
@@ -94,6 +114,12 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         return limiterRule;
     }
 
+    /**
+     * 创建测试用 Redisson 客户端代理。
+     *
+     * @param state 令牌桶测试状态
+     * @return Redisson 客户端
+     */
     private static RedissonClient redissonClient(TokenBucketLimiterState state) {
         RRateLimiter rateLimiter = rateLimiter(state);
         return (RedissonClient) Proxy.newProxyInstance(
@@ -112,6 +138,12 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         );
     }
 
+    /**
+     * 创建测试用 RRateLimiter 代理。
+     *
+     * @param state 令牌桶测试状态
+     * @return RRateLimiter 代理
+     */
     private static RRateLimiter rateLimiter(TokenBucketLimiterState state) {
         return (RRateLimiter) Proxy.newProxyInstance(
                 RRateLimiter.class.getClassLoader(),
@@ -154,14 +186,49 @@ class RedissonTokenBucketRateLimiterHandlerTest {
         );
     }
 
+    /**
+     * 令牌桶测试状态。
+     */
     private static final class TokenBucketLimiterState {
+
+        /**
+         * 是否已完成初始化。
+         */
         private boolean initialized;
+
+        /**
+         * 当前速率值。
+         */
         private long rate;
+
+        /**
+         * 当前窗口大小。
+         */
         private long interval;
+
+        /**
+         * 当前窗口单位。
+         */
         private RateIntervalUnit intervalUnit = RateIntervalUnit.SECONDS;
+
+        /**
+         * 最近一次申请的许可数量。
+         */
         private long lastPermits;
+
+        /**
+         * trySetRate 调用次数。
+         */
         private int trySetRateCalls;
+
+        /**
+         * setRate 调用次数。
+         */
         private int setRateCalls;
+
+        /**
+         * 最近一次限流器名称。
+         */
         private String lastLimiterName;
     }
 }

@@ -35,10 +35,25 @@ import java.lang.reflect.Method;
  */
 public class RateLimitOperationResolver {
 
+    /**
+     * SpEL 解析器。
+     */
     private static final ExpressionParser PARSER = new SpelExpressionParser();
+
+    /**
+     * 方法参数名发现器。
+     */
     private static final DefaultParameterNameDiscoverer PARAMETER_NAME_DISCOVERER =
             new DefaultParameterNameDiscoverer();
 
+    /**
+     * 解析注解中的限流操作信息。
+     *
+     * @param method 目标方法
+     * @param args 方法参数
+     * @param rateLimit 限流注解
+     * @return 解析后的限流操作
+     */
     public RateLimitOperation resolve(Method method, Object[] args, RateLimit rateLimit) {
         String scene = resolveScene(method, rateLimit);
         String key = resolveKey(method, args, rateLimit);
@@ -59,6 +74,13 @@ public class RateLimitOperationResolver {
         );
     }
 
+    /**
+     * 解析限流场景名。
+     *
+     * @param method 目标方法
+     * @param rateLimit 限流注解
+     * @return 场景名
+     */
     private String resolveScene(Method method, RateLimit rateLimit) {
         if (StringUtils.hasText(rateLimit.scene())) {
             return rateLimit.scene().trim();
@@ -66,6 +88,14 @@ public class RateLimitOperationResolver {
         return method.getDeclaringClass().getSimpleName() + "." + method.getName();
     }
 
+    /**
+     * 解析限流 key。
+     *
+     * @param method 目标方法
+     * @param args 方法参数
+     * @param rateLimit 限流注解
+     * @return 解析后的 key
+     */
     private String resolveKey(Method method, Object[] args, RateLimit rateLimit) {
         if (StringUtils.hasText(rateLimit.key())) {
             return rateLimit.key().trim();
@@ -93,6 +123,15 @@ public class RateLimitOperationResolver {
         return value.toString();
     }
 
+    /**
+     * 限流操作描述。
+     *
+     * @param limiterName 限流器名称
+     * @param rule 限流规则
+     * @param permits 申请令牌数
+     * @param timeout 等待时长
+     * @param timeoutUnit 等待时间单位
+     */
     public record RateLimitOperation(
             String limiterName,
             LimiterRule rule,

@@ -44,9 +44,24 @@ import java.lang.reflect.Method;
 @ConditionalOnClass(name = "org.aspectj.lang.ProceedingJoinPoint")
 public class RateLimitAspect {
 
+    /**
+     * 限流注册表。
+     */
     private final RateLimiterRegistry rateLimiterRegistry;
+
+    /**
+     * 限流操作解析器。
+     */
     private final RateLimitOperationResolver rateLimitOperationResolver;
 
+    /**
+     * 在目标方法执行前执行限流校验。
+     *
+     * @param joinPoint 切点对象
+     * @param rateLimit 限流注解
+     * @return 目标方法返回值
+     * @throws Throwable 目标方法异常
+     */
     @Around("@annotation(rateLimit)")
     public Object around(ProceedingJoinPoint joinPoint, RateLimit rateLimit) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -69,6 +84,13 @@ public class RateLimitAspect {
         return joinPoint.proceed();
     }
 
+    /**
+     * 解析代理对象背后的最具体方法。
+     *
+     * @param joinPoint 切点对象
+     * @param signature 方法签名
+     * @return 最具体的方法对象
+     */
     private Method resolveMethod(ProceedingJoinPoint joinPoint, MethodSignature signature) {
         Method method = signature.getMethod();
         Object target = joinPoint.getTarget();

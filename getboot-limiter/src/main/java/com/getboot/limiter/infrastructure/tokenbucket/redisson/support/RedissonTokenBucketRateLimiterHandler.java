@@ -36,14 +36,31 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorithmHandler {
 
+    /**
+     * 令牌桶 Redis 支撑组件。
+     */
     private final TokenBucketRedisSupport tokenBucketRedisSupport;
+
+    /**
+     * 令牌桶配置。
+     */
     private final TokenBucketRateLimiterProperties properties;
 
+    /**
+     * 返回当前处理器支持的算法类型。
+     *
+     * @return 算法类型
+     */
     @Override
     public LimiterAlgorithm algorithm() {
         return LimiterAlgorithm.TOKEN_BUCKET;
     }
 
+    /**
+     * 返回预定义限流规则集合。
+     *
+     * @return 预定义规则集合
+     */
     @Override
     public Map<String, LimiterRule> predefinedRules() {
         Map<String, LimiterRule> predefinedRules = new HashMap<>();
@@ -53,6 +70,11 @@ public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorit
         return predefinedRules;
     }
 
+    /**
+     * 返回默认限流规则。
+     *
+     * @return 默认规则
+     */
     @Override
     public LimiterRule defaultRule() {
         LimiterRule defaultRule = new LimiterRule();
@@ -63,11 +85,21 @@ public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorit
         return defaultRule;
     }
 
+    /**
+     * 返回默认等待时长。
+     *
+     * @return 默认等待秒数
+     */
     @Override
     public long defaultTimeout() {
         return properties.getDefaultTimeout();
     }
 
+    /**
+     * 校验令牌桶规则是否合法。
+     *
+     * @param rule 限流规则
+     */
     @Override
     public void validateRule(LimiterRule rule) {
         LimiterRule normalizedRule = normalizeRule(rule);
@@ -83,6 +115,14 @@ public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorit
         toRateIntervalUnit(normalizedRule);
     }
 
+    /**
+     * 尝试获取指定数量的令牌。
+     *
+     * @param limiterName 限流器名称
+     * @param rule 限流规则
+     * @param permits 令牌数量
+     * @return 是否获取成功
+     */
     @Override
     public boolean tryAcquire(String limiterName, LimiterRule rule, long permits) {
         if (permits <= 0) {
@@ -99,11 +139,23 @@ public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorit
         );
     }
 
+    /**
+     * 删除限流器底层状态。
+     *
+     * @param limiterName 限流器名称
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(String limiterName) {
         return tokenBucketRedisSupport.delete(limiterName);
     }
 
+    /**
+     * 标准化令牌桶规则。
+     *
+     * @param rule 原始规则
+     * @return 标准化后的规则
+     */
     private LimiterRule normalizeRule(LimiterRule rule) {
         if (rule == null) {
             throw new IllegalArgumentException("Limiter rule must not be null.");
@@ -115,6 +167,12 @@ public class RedissonTokenBucketRateLimiterHandler implements RateLimiterAlgorit
         return normalizedRule;
     }
 
+    /**
+     * 将规则中的时间单位转换为 Redisson 单位。
+     *
+     * @param rule 限流规则
+     * @return Redisson 时间单位
+     */
     private RateIntervalUnit toRateIntervalUnit(LimiterRule rule) {
         TimeUnit intervalUnit;
         try {

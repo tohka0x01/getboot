@@ -50,7 +50,7 @@
 ### Cross-Cutting Capability
 
 - [x] `getboot-auth`
-- [ ] `getboot-limiter`
+- [x] `getboot-limiter`
 - [x] `getboot-lock`
 - [ ] `getboot-idempotency`
 - [ ] `getboot-governance`

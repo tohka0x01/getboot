@@ -35,14 +35,31 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgorithmHandler {
 
+    /**
+     * 滑动窗口 Redis 支撑组件。
+     */
     private final SlidingWindowRedisSupport slidingWindowRedisSupport;
+
+    /**
+     * 滑动窗口配置。
+     */
     private final SlidingWindowRateLimiterProperties properties;
 
+    /**
+     * 返回当前处理器支持的算法类型。
+     *
+     * @return 算法类型
+     */
     @Override
     public LimiterAlgorithm algorithm() {
         return LimiterAlgorithm.SLIDING_WINDOW;
     }
 
+    /**
+     * 返回预定义限流规则集合。
+     *
+     * @return 预定义规则集合
+     */
     @Override
     public Map<String, LimiterRule> predefinedRules() {
         Map<String, LimiterRule> predefinedRules = new HashMap<>();
@@ -52,6 +69,11 @@ public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgor
         return predefinedRules;
     }
 
+    /**
+     * 返回默认限流规则。
+     *
+     * @return 默认规则
+     */
     @Override
     public LimiterRule defaultRule() {
         LimiterRule defaultRule = new LimiterRule();
@@ -62,11 +84,21 @@ public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgor
         return defaultRule;
     }
 
+    /**
+     * 返回默认等待时长。
+     *
+     * @return 默认等待秒数
+     */
     @Override
     public long defaultTimeout() {
         return properties.getDefaultTimeout();
     }
 
+    /**
+     * 校验滑动窗口规则是否合法。
+     *
+     * @param rule 限流规则
+     */
     @Override
     public void validateRule(LimiterRule rule) {
         LimiterRule normalizedRule = normalizeRule(rule);
@@ -82,6 +114,14 @@ public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgor
         resolveIntervalUnit(normalizedRule);
     }
 
+    /**
+     * 尝试获取指定数量许可。
+     *
+     * @param limiterName 限流器名称
+     * @param rule 限流规则
+     * @param permits 许可数量
+     * @return 是否获取成功
+     */
     @Override
     public boolean tryAcquire(String limiterName, LimiterRule rule, long permits) {
         if (permits <= 0) {
@@ -98,11 +138,23 @@ public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgor
         );
     }
 
+    /**
+     * 删除限流器底层状态。
+     *
+     * @param limiterName 限流器名称
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(String limiterName) {
         return slidingWindowRedisSupport.delete(limiterName);
     }
 
+    /**
+     * 标准化滑动窗口规则。
+     *
+     * @param rule 原始规则
+     * @return 标准化后的规则
+     */
     private LimiterRule normalizeRule(LimiterRule rule) {
         if (rule == null) {
             throw new IllegalArgumentException("Limiter rule must not be null.");
@@ -114,6 +166,12 @@ public class RedissonSlidingWindowRateLimiterHandler implements RateLimiterAlgor
         return normalizedRule;
     }
 
+    /**
+     * 解析滑动窗口时间单位。
+     *
+     * @param rule 限流规则
+     * @return 时间单位
+     */
     private TimeUnit resolveIntervalUnit(LimiterRule rule) {
         try {
             return rule.resolveIntervalUnit();

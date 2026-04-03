@@ -27,8 +27,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * 方法级限流切面测试。
+ */
 class RateLimitAspectTest {
 
+    /**
+     * 验证 JDK 代理场景下能够解析到实现类方法。
+     */
     @Test
     void shouldResolveImplementationMethodForJdkProxy() {
         CapturingRateLimiterRegistry registry = new CapturingRateLimiterRegistry();
@@ -49,13 +55,29 @@ class RateLimitAspectTest {
         assertEquals(TimeUnit.SECONDS, registry.timeUnit);
     }
 
+    /**
+     * 测试用短信服务接口。
+     */
     interface SmsService {
 
+        /**
+         * 发送短信。
+         *
+         * @param phone 手机号
+         */
         void send(String phone);
     }
 
+    /**
+     * 测试用短信服务实现。
+     */
     static final class SmsServiceImpl implements SmsService {
 
+        /**
+         * 发送短信。
+         *
+         * @param phone 手机号
+         */
         @Override
         @RateLimit(
                 scene = "send-sms",
@@ -69,14 +91,46 @@ class RateLimitAspectTest {
         }
     }
 
+    /**
+     * 用于捕获切面入参的限流注册表。
+     */
     static final class CapturingRateLimiterRegistry implements RateLimiterRegistry {
 
+        /**
+         * 捕获到的限流器名称。
+         */
         private String limiterName;
+
+        /**
+         * 捕获到的限流规则。
+         */
         private LimiterRule rule;
+
+        /**
+         * 捕获到的许可数量。
+         */
         private long permits;
+
+        /**
+         * 捕获到的超时时长。
+         */
         private long timeout;
+
+        /**
+         * 捕获到的超时单位。
+         */
         private TimeUnit timeUnit;
 
+        /**
+         * 记录切面提交的限流参数。
+         *
+         * @param limiterName 限流器名称
+         * @param rule 限流规则
+         * @param permits 许可数量
+         * @param timeout 超时时长
+         * @param timeUnit 超时单位
+         * @return 始终返回成功
+         */
         @Override
         public boolean tryAcquire(String limiterName, LimiterRule rule, long permits, long timeout, TimeUnit timeUnit) {
             this.limiterName = limiterName;
@@ -87,36 +141,84 @@ class RateLimitAspectTest {
             return true;
         }
 
+        /**
+         * 测试中不支持直接配置限流器。
+         *
+         * @param limiterName 限流器名称
+         * @param config 限流配置
+         */
         @Override
         public void configureRateLimiter(String limiterName, LimiterRule config) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持该重载。
+         *
+         * @param limiterName 限流器名称
+         * @return 不返回
+         */
         @Override
         public boolean tryAcquire(String limiterName) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持该重载。
+         *
+         * @param limiterName 限流器名称
+         * @param permits 许可数量
+         * @return 不返回
+         */
         @Override
         public boolean tryAcquire(String limiterName, long permits) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持该重载。
+         *
+         * @param limiterName 限流器名称
+         * @param timeout 超时时长
+         * @param timeUnit 超时单位
+         * @return 不返回
+         */
         @Override
         public boolean tryAcquire(String limiterName, long timeout, TimeUnit timeUnit) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持该重载。
+         *
+         * @param limiterName 限流器名称
+         * @param permits 许可数量
+         * @param timeout 超时时长
+         * @param timeUnit 超时单位
+         * @return 不返回
+         */
         @Override
         public boolean tryAcquire(String limiterName, long permits, long timeout, TimeUnit timeUnit) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持直接更新限流器配置。
+         *
+         * @param limiterName 限流器名称
+         * @param newConfig 新配置
+         */
         @Override
         public void updateRateLimiterConfig(String limiterName, LimiterRule newConfig) {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * 测试中不支持删除限流器。
+         *
+         * @param limiterName 限流器名称
+         * @return 不返回
+         */
         @Override
         public boolean deleteRateLimiter(String limiterName) {
             throw new UnsupportedOperationException();

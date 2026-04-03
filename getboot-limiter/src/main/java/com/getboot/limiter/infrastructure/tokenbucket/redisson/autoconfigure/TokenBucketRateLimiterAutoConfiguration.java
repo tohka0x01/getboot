@@ -42,6 +42,13 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(TokenBucketRateLimiterProperties.class)
 public class TokenBucketRateLimiterAutoConfiguration {
 
+    /**
+     * 注册令牌桶 Redis 支撑组件。
+     *
+     * @param redissonClient Redisson 客户端
+     * @param properties 令牌桶配置
+     * @return Redis 支撑组件
+     */
     @Bean
     @ConditionalOnMissingBean
     public TokenBucketRedisSupport tokenBucketRedisSupport(RedissonClient redissonClient,
@@ -49,6 +56,13 @@ public class TokenBucketRateLimiterAutoConfiguration {
         return new TokenBucketRedisSupport(redissonClient, properties.getKeyPrefix());
     }
 
+    /**
+     * 注册令牌桶算法处理器。
+     *
+     * @param tokenBucketRedisSupport Redis 支撑组件
+     * @param properties 令牌桶配置
+     * @return 算法处理器
+     */
     @Bean
     @ConditionalOnMissingBean(name = "redissonTokenBucketRateLimiterHandler")
     public RateLimiterAlgorithmHandler redissonTokenBucketRateLimiterHandler(

@@ -23,6 +23,12 @@ package com.getboot.limiter.api.exception;
  * @author qiheng
  */
 public class RateLimitException extends RuntimeException {
+
+    /**
+     * 使用异常消息创建限流异常。
+     *
+     * @param message 异常消息
+     */
     public RateLimitException(String message) {
         super(message);
     }

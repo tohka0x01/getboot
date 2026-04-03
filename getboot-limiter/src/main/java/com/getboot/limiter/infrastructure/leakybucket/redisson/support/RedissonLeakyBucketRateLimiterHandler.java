@@ -35,14 +35,31 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorithmHandler {
 
+    /**
+     * 漏桶 Redis 支撑组件。
+     */
     private final LeakyBucketRedisSupport leakyBucketRedisSupport;
+
+    /**
+     * 漏桶配置。
+     */
     private final LeakyBucketRateLimiterProperties properties;
 
+    /**
+     * 返回当前处理器支持的算法类型。
+     *
+     * @return 算法类型
+     */
     @Override
     public LimiterAlgorithm algorithm() {
         return LimiterAlgorithm.LEAKY_BUCKET;
     }
 
+    /**
+     * 返回预定义限流规则集合。
+     *
+     * @return 预定义规则集合
+     */
     @Override
     public Map<String, LimiterRule> predefinedRules() {
         Map<String, LimiterRule> predefinedRules = new HashMap<>();
@@ -52,6 +69,11 @@ public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorit
         return predefinedRules;
     }
 
+    /**
+     * 返回默认限流规则。
+     *
+     * @return 默认规则
+     */
     @Override
     public LimiterRule defaultRule() {
         LimiterRule defaultRule = new LimiterRule();
@@ -62,11 +84,21 @@ public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorit
         return defaultRule;
     }
 
+    /**
+     * 返回默认等待时长。
+     *
+     * @return 默认等待秒数
+     */
     @Override
     public long defaultTimeout() {
         return properties.getDefaultTimeout();
     }
 
+    /**
+     * 校验漏桶规则是否合法。
+     *
+     * @param rule 限流规则
+     */
     @Override
     public void validateRule(LimiterRule rule) {
         LimiterRule normalizedRule = normalizeRule(rule);
@@ -82,6 +114,14 @@ public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorit
         resolveIntervalUnit(normalizedRule);
     }
 
+    /**
+     * 尝试获取指定数量许可。
+     *
+     * @param limiterName 限流器名称
+     * @param rule 限流规则
+     * @param permits 许可数量
+     * @return 是否获取成功
+     */
     @Override
     public boolean tryAcquire(String limiterName, LimiterRule rule, long permits) {
         if (permits <= 0L) {
@@ -98,11 +138,23 @@ public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorit
         );
     }
 
+    /**
+     * 删除限流器底层状态。
+     *
+     * @param limiterName 限流器名称
+     * @return 是否删除成功
+     */
     @Override
     public boolean delete(String limiterName) {
         return leakyBucketRedisSupport.delete(limiterName);
     }
 
+    /**
+     * 标准化漏桶规则。
+     *
+     * @param rule 原始规则
+     * @return 标准化后的规则
+     */
     private LimiterRule normalizeRule(LimiterRule rule) {
         if (rule == null) {
             throw new IllegalArgumentException("Limiter rule must not be null.");
@@ -114,6 +166,12 @@ public class RedissonLeakyBucketRateLimiterHandler implements RateLimiterAlgorit
         return normalizedRule;
     }
 
+    /**
+     * 解析漏桶时间单位。
+     *
+     * @param rule 限流规则
+     * @return 时间单位
+     */
     private TimeUnit resolveIntervalUnit(LimiterRule rule) {
         TimeUnit intervalUnit;
         try {

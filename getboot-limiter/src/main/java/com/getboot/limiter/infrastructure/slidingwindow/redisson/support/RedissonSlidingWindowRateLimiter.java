@@ -26,12 +26,28 @@ import java.util.concurrent.TimeUnit;
  */
 public class RedissonSlidingWindowRateLimiter implements RateLimiter {
 
+    /**
+     * 滑动窗口 Redis 支撑组件。
+     */
     private final SlidingWindowRedisSupport slidingWindowRedisSupport;
 
+    /**
+     * 创建滑动窗口限流器适配器。
+     *
+     * @param slidingWindowRedisSupport Redis 支撑组件
+     */
     public RedissonSlidingWindowRateLimiter(SlidingWindowRedisSupport slidingWindowRedisSupport) {
         this.slidingWindowRedisSupport = slidingWindowRedisSupport;
     }
 
+    /**
+     * 以秒级窗口执行一次限流校验。
+     *
+     * @param key 业务 key
+     * @param limit 限流阈值
+     * @param windowSize 窗口大小
+     * @return 是否允许通过
+     */
     @Override
     public boolean tryAcquire(String key, int limit, int windowSize) {
         return slidingWindowRedisSupport.tryAcquire(key, limit, windowSize, TimeUnit.SECONDS, 1);

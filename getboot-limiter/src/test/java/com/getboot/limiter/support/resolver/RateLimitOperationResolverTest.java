@@ -24,10 +24,21 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * 限流操作解析器测试。
+ */
 class RateLimitOperationResolverTest {
 
+    /**
+     * 被测解析器。
+     */
     private final RateLimitOperationResolver resolver = new RateLimitOperationResolver();
 
+    /**
+     * 验证能够从注解中解析 SpEL key 和运行时规则。
+     *
+     * @throws NoSuchMethodException 反射异常
+     */
     @Test
     void shouldResolveSpelKeyAndRuntimeRuleFromAnnotation() throws NoSuchMethodException {
         Method method = DemoService.class.getDeclaredMethod("sendSms", String.class);
@@ -46,6 +57,11 @@ class RateLimitOperationResolverTest {
         assertEquals(TimeUnit.SECONDS, operation.timeoutUnit());
     }
 
+    /**
+     * 验证 scene 和 key 为空时会回退到默认命名。
+     *
+     * @throws NoSuchMethodException 反射异常
+     */
     @Test
     void shouldFallbackToMethodNameWhenSceneAndKeyAreBlank() throws NoSuchMethodException {
         Method method = DemoService.class.getDeclaredMethod("createOrder");
@@ -61,6 +77,11 @@ class RateLimitOperationResolverTest {
         assertEquals(TimeUnit.MINUTES.name(), operation.rule().getIntervalUnit());
     }
 
+    /**
+     * 验证参数别名 p0 / a0 可用于 SpEL 解析。
+     *
+     * @throws NoSuchMethodException 反射异常
+     */
     @Test
     void shouldResolveIndexedParameterAliases() throws NoSuchMethodException {
         Method method = DemoService.class.getDeclaredMethod("sendSmsWithIndexedKey", String.class);
@@ -72,8 +93,16 @@ class RateLimitOperationResolverTest {
         assertEquals("send-sms-indexed:13800000000", operation.limiterName());
     }
 
+    /**
+     * 测试用演示服务。
+     */
     private static final class DemoService {
 
+        /**
+         * 发送短信。
+         *
+         * @param phone 手机号
+         */
         @RateLimit(
                 scene = "send-sms",
                 keyExpression = "#phone",
@@ -87,6 +116,11 @@ class RateLimitOperationResolverTest {
         private void sendSms(String phone) {
         }
 
+        /**
+         * 使用索引参数发送短信。
+         *
+         * @param phone 手机号
+         */
         @RateLimit(
                 scene = "send-sms-indexed",
                 keyExpression = "#p0",
@@ -98,6 +132,9 @@ class RateLimitOperationResolverTest {
         private void sendSmsWithIndexedKey(String phone) {
         }
 
+        /**
+         * 创建订单。
+         */
         @RateLimit(rate = 10, interval = 1, intervalUnit = TimeUnit.MINUTES)
         private void createOrder() {
         }

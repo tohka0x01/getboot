@@ -28,8 +28,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * 漏桶算法处理器测试。
+ */
 class RedissonLeakyBucketRateLimiterHandlerTest {
 
+    /**
+     * 验证不支持的时间单位会被拒绝。
+     */
     @Test
     void shouldRejectUnsupportedIntervalUnit() {
         FakeLeakyBucketState state = new FakeLeakyBucketState();
@@ -45,6 +51,12 @@ class RedissonLeakyBucketRateLimiterHandlerTest {
         assertTrue(exception.getMessage().contains("MICROSECONDS"));
     }
 
+    /**
+     * 创建测试用限流规则。
+     *
+     * @param intervalUnit 时间单位
+     * @return 限流规则
+     */
     private static LimiterRule rule(String intervalUnit) {
         LimiterRule limiterRule = new LimiterRule();
         limiterRule.setAlgorithm(LimiterAlgorithm.LEAKY_BUCKET);
@@ -54,6 +66,12 @@ class RedissonLeakyBucketRateLimiterHandlerTest {
         return limiterRule;
     }
 
+    /**
+     * 创建测试用 Redisson 客户端代理。
+     *
+     * @param state 测试状态
+     * @return Redisson 客户端
+     */
     private static RedissonClient redissonClient(FakeLeakyBucketState state) {
         return (RedissonClient) Proxy.newProxyInstance(
                 RedissonClient.class.getClassLoader(),
@@ -68,6 +86,9 @@ class RedissonLeakyBucketRateLimiterHandlerTest {
         );
     }
 
+    /**
+     * 占位测试状态。
+     */
     private static final class FakeLeakyBucketState {
     }
 }

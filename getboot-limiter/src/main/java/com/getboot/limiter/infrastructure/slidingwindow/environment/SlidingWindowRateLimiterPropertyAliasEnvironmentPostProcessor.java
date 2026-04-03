@@ -30,11 +30,22 @@ import java.util.Map;
 public class SlidingWindowRateLimiterPropertyAliasEnvironmentPostProcessor
         extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回别名属性源名称。
+     *
+     * @return 属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootLimiterSlidingWindowAliasedProperties";
     }
 
+    /**
+     * 写入旧配置到新配置的别名映射。
+     *
+     * @param environment Spring 环境
+     * @param aliasedProperties 别名属性集合
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(
@@ -51,6 +62,14 @@ public class SlidingWindowRateLimiterPropertyAliasEnvironmentPostProcessor
                 "getboot.limiter.sliding-window.key-prefix");
     }
 
+    /**
+     * 在目标属性未显式配置时写入单个别名属性。
+     *
+     * @param environment Spring 环境
+     * @param aliasedProperties 别名属性集合
+     * @param sourcePropertyName 旧属性名
+     * @param targetPropertyName 新属性名
+     */
     private void aliasProperty(ConfigurableEnvironment environment,
                                Map<String, Object> aliasedProperties,
                                String sourcePropertyName,
