@@ -35,18 +35,39 @@ import java.nio.charset.StandardCharsets;
  */
 public class MqTraceContextSupport {
 
+    /**
+     * 默认写入 MDC 的 Trace 键名。
+     */
     private static final String DEFAULT_TRACE_MDC_KEY = "traceId";
 
+    /**
+     * MQ Trace 配置。
+     */
     private final MqTraceProperties traceProperties;
 
+    /**
+     * 创建 MQ Trace 上下文支撑工具。
+     *
+     * @param traceProperties MQ Trace 配置
+     */
     public MqTraceContextSupport(MqTraceProperties traceProperties) {
         this.traceProperties = traceProperties;
     }
 
+    /**
+     * 判断当前是否启用 MQ Trace 透传。
+     *
+     * @return 启用 Trace 透传时返回 {@code true}
+     */
     public boolean isEnabled() {
         return traceProperties != null && traceProperties.isEnabled();
     }
 
+    /**
+     * 返回当前使用的 Trace 消息头名称。
+     *
+     * @return Trace 消息头名称
+     */
     public String getTraceHeaderName() {
         if (traceProperties != null && StringUtils.hasText(traceProperties.getHeaderName())) {
             return traceProperties.getHeaderName().trim();
@@ -54,6 +75,11 @@ public class MqTraceContextSupport {
         return "TRACE_ID";
     }
 
+    /**
+     * 返回当前使用的 Trace MDC 键名。
+     *
+     * @return Trace MDC 键名
+     */
     public String getTraceMdcKey() {
         if (traceProperties != null && StringUtils.hasText(traceProperties.getMdcKey())) {
             return traceProperties.getMdcKey().trim();
@@ -61,6 +87,12 @@ public class MqTraceContextSupport {
         return DEFAULT_TRACE_MDC_KEY;
     }
 
+    /**
+     * 解析出站消息应当携带的 TraceId。
+     *
+     * @param message MQ 消息
+     * @return 出站 TraceId
+     */
     public String resolveOutboundTraceId(MqMessage message) {
         String currentTraceId = TraceContextHolder.getTraceId();
         if (StringUtils.hasText(currentTraceId)) {
@@ -72,6 +104,12 @@ public class MqTraceContextSupport {
         return null;
     }
 
+    /**
+     * 从入站消息对象中提取 TraceId。
+     *
+     * @param source 入站消息来源对象
+     * @return 提取到的 TraceId
+     */
     public String resolveInboundTraceId(Object source) {
         if (!isEnabled() || source == null) {
             return null;
@@ -121,6 +159,12 @@ public class MqTraceContextSupport {
         return null;
     }
 
+    /**
+     * 打开一个新的 Trace 作用域，并在关闭时恢复原始上下文。
+     *
+     * @param traceId 待绑定的 TraceId
+     * @return Trace 作用域
+     */
     public TraceScope openScope(String traceId) {
         if (!StringUtils.hasText(traceId)) {
             return TraceScope.noop();
@@ -133,6 +177,12 @@ public class MqTraceContextSupport {
         return new TraceScope(previousTraceId, traceMdcKey, previousMdcTraceId, true);
     }
 
+    /**
+     * 将不同来源的 Trace 值规范化为字符串。
+     *
+     * @param traceValue 原始 Trace 值
+     * @return 规范化后的 TraceId
+     */
     private String normalizeTraceValue(Object traceValue) {
         if (traceValue instanceof byte[] bytes) {
             String traceId = new String(bytes, StandardCharsets.UTF_8);
@@ -148,16 +198,32 @@ public class MqTraceContextSupport {
         return null;
     }
 
+    /**
+     * MQ Trace 作用域。
+     *
+     * @param previousTraceId 进入作用域前的 TraceId
+     * @param traceMdcKey Trace 的 MDC 键名
+     * @param previousMdcTraceId 进入作用域前 MDC 中的 Trace 值
+     * @param active 当前作用域是否生效
+     */
     public record TraceScope(
             String previousTraceId,
             String traceMdcKey,
             String previousMdcTraceId,
             boolean active) implements AutoCloseable {
 
+        /**
+         * 创建不执行任何恢复逻辑的空作用域。
+         *
+         * @return 空作用域
+         */
         public static TraceScope noop() {
             return new TraceScope(null, null, null, false);
         }
 
+        /**
+         * 关闭作用域并恢复进入前的 Trace 上下文。
+         */
         @Override
         public void close() {
             if (!active) {

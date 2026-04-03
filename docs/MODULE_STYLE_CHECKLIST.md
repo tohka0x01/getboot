@@ -61,7 +61,7 @@
 
 - [x] `getboot-http-client`
 - [x] `getboot-rpc`
-- [ ] `getboot-mq`
+- [x] `getboot-mq`
 - [ ] `getboot-job`
 
 ### Ecosystem

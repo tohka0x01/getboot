@@ -31,23 +31,52 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class RocketMqTraceListenerAspect {
 
+    /**
+     * MQ Trace 上下文支撑工具。
+     */
     private final MqTraceContextSupport traceContextSupport;
 
+    /**
+     * 创建 RocketMQ Trace 监听切面。
+     *
+     * @param traceProperties MQ Trace 配置
+     */
     public RocketMqTraceListenerAspect(MqTraceProperties traceProperties) {
         this.traceContextSupport = new MqTraceContextSupport(traceProperties);
     }
 
+    /**
+     * 在 RocketMQ 普通监听器执行前恢复 Trace 上下文。
+     *
+     * @param joinPoint 切点信息
+     * @return 监听器执行结果
+     * @throws Throwable 监听器抛出的异常
+     */
     @Around("this(org.apache.rocketmq.spring.core.RocketMQListener) && execution(* *.onMessage(..))")
     public Object aroundRocketMqListener(ProceedingJoinPoint joinPoint) throws Throwable {
         return proceedWithTrace(joinPoint);
     }
 
+    /**
+     * 在 RocketMQ 事务监听器执行前恢复 Trace 上下文。
+     *
+     * @param joinPoint 切点信息
+     * @return 事务监听器执行结果
+     * @throws Throwable 事务监听器抛出的异常
+     */
     @Around("this(org.apache.rocketmq.spring.core.RocketMQLocalTransactionListener) && "
             + "(execution(* *.executeLocalTransaction(..)) || execution(* *.checkLocalTransaction(..)))")
     public Object aroundRocketMqLocalTransactionListener(ProceedingJoinPoint joinPoint) throws Throwable {
         return proceedWithTrace(joinPoint);
     }
 
+    /**
+     * 在目标方法执行前打开 Trace 作用域。
+     *
+     * @param joinPoint 切点信息
+     * @return 目标方法执行结果
+     * @throws Throwable 目标方法抛出的异常
+     */
     private Object proceedWithTrace(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!traceContextSupport.isEnabled()) {
             return joinPoint.proceed();
@@ -58,6 +87,12 @@ public class RocketMqTraceListenerAspect {
         }
     }
 
+    /**
+     * 从方法参数中解析 TraceId。
+     *
+     * @param arguments 方法参数
+     * @return 解析到的 TraceId
+     */
     private String resolveTraceId(Object[] arguments) {
         if (arguments == null) {
             return null;

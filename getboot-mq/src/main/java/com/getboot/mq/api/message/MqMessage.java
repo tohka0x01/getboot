@@ -16,6 +16,9 @@
 package com.getboot.mq.api.message;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -29,26 +32,56 @@ import java.util.UUID;
  *
  * @author qiheng
  */
+@Getter
+@Setter
+@Accessors(chain = true)
 public abstract class MqMessage implements Serializable {
 
+    /**
+     * 序列化版本号。
+     */
     @Serial
     private static final long serialVersionUID = 2023081801L;
 
+    /**
+     * 业务唯一键。
+     */
     private String bizKey;
 
+    /**
+     * 消息版本号。
+     */
     private String version = "1.0";
 
+    /**
+     * 消息唯一标识。
+     */
     private String messageId = UUID.randomUUID().toString().replace("-", "");
 
+    /**
+     * 当前消息绑定的 TraceId。
+     */
     private String traceId;
 
+    /**
+     * 消息发送时间。
+     */
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
     private LocalDateTime sendTime;
 
+    /**
+     * 当前重试次数。
+     */
     private int retryCount;
 
+    /**
+     * 允许的最大重试次数。
+     */
     private int maxRetries = 3;
 
+    /**
+     * 源系统标识。
+     */
     private String sourceSystem;
 
     /**
@@ -76,86 +109,29 @@ public abstract class MqMessage implements Serializable {
         }
     }
 
+    /**
+     * 返回便于日志输出的简化消息摘要。
+     *
+     * @return 消息简要描述
+     */
     public String toSimpleString() {
         return String.format("Message{id=%s, type=%s, key=%s}",
                 messageId, getMessageType(), bizKey);
     }
 
+    /**
+     * 消息创建异常。
+     */
     public static class MessageCreateException extends RuntimeException {
+
+        /**
+         * 创建消息创建异常。
+         *
+         * @param message 异常消息
+         * @param cause 根因异常
+         */
         public MessageCreateException(String message, Throwable cause) {
             super(message, cause);
         }
-    }
-
-    public String getBizKey() {
-        return bizKey;
-    }
-
-    public MqMessage setBizKey(String bizKey) {
-        this.bizKey = bizKey;
-        return this;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public MqMessage setVersion(String version) {
-        this.version = version;
-        return this;
-    }
-
-    public String getMessageId() {
-        return messageId;
-    }
-
-    public MqMessage setMessageId(String messageId) {
-        this.messageId = messageId;
-        return this;
-    }
-
-    public String getTraceId() {
-        return traceId;
-    }
-
-    public MqMessage setTraceId(String traceId) {
-        this.traceId = traceId;
-        return this;
-    }
-
-    public LocalDateTime getSendTime() {
-        return sendTime;
-    }
-
-    public MqMessage setSendTime(LocalDateTime sendTime) {
-        this.sendTime = sendTime;
-        return this;
-    }
-
-    public int getRetryCount() {
-        return retryCount;
-    }
-
-    public MqMessage setRetryCount(int retryCount) {
-        this.retryCount = retryCount;
-        return this;
-    }
-
-    public int getMaxRetries() {
-        return maxRetries;
-    }
-
-    public MqMessage setMaxRetries(int maxRetries) {
-        this.maxRetries = maxRetries;
-        return this;
-    }
-
-    public String getSourceSystem() {
-        return sourceSystem;
-    }
-
-    public MqMessage setSourceSystem(String sourceSystem) {
-        this.sourceSystem = sourceSystem;
-        return this;
     }
 }

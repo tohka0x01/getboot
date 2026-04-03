@@ -28,14 +28,25 @@ import org.springframework.messaging.support.MessageBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+/**
+ * {@link KafkaMqTraceListenerAspect} 测试。
+ *
+ * @author qiheng
+ */
 class KafkaMqTraceListenerAspectTest {
 
+    /**
+     * 清理线程级 Trace 上下文与 MDC。
+     */
     @AfterEach
     void tearDown() {
         TraceContextHolder.clear();
         MDC.clear();
     }
 
+    /**
+     * 验证 Kafka 监听方法执行前会恢复 Trace 上下文，并在结束后自动清理。
+     */
     @Test
     void shouldRestoreTraceContextForKafkaListenerMethod() {
         KafkaMqTraceListenerAspect aspect = new KafkaMqTraceListenerAspect(new MqTraceProperties());
@@ -56,11 +67,27 @@ class KafkaMqTraceListenerAspectTest {
         assertNull(MDC.get("traceId"));
     }
 
+    /**
+     * Kafka 监听测试服务。
+     */
     static class ListenerService {
 
+        /**
+         * 监听方法中读取到的 TraceId。
+         */
         private String traceIdInListener;
+
+        /**
+         * 监听方法中读取到的 MDC Trace 值。
+         */
         private String traceIdInMdc;
 
+        /**
+         * 模拟 Kafka 监听方法。
+         *
+         * @param message 入站消息
+         * @return 当前线程中的 TraceId
+         */
         @KafkaListener(topics = "orders")
         public String handle(Message<String> message) {
             traceIdInListener = TraceContextHolder.getTraceId();

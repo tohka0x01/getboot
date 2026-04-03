@@ -31,12 +31,27 @@ import org.aspectj.lang.annotation.Aspect;
 @Aspect
 public class KafkaMqTraceListenerAspect {
 
+    /**
+     * MQ Trace 上下文支撑工具。
+     */
     private final MqTraceContextSupport traceContextSupport;
 
+    /**
+     * 创建 Kafka Trace 监听切面。
+     *
+     * @param traceProperties MQ Trace 配置
+     */
     public KafkaMqTraceListenerAspect(MqTraceProperties traceProperties) {
         this.traceContextSupport = new MqTraceContextSupport(traceProperties);
     }
 
+    /**
+     * 在 Kafka 监听方法执行前恢复 Trace 上下文。
+     *
+     * @param joinPoint 切点信息
+     * @return 监听方法执行结果
+     * @throws Throwable 监听方法抛出的异常
+     */
     @Around("@annotation(org.springframework.kafka.annotation.KafkaListener) || "
             + "@within(org.springframework.kafka.annotation.KafkaListener)")
     public Object aroundKafkaListener(ProceedingJoinPoint joinPoint) throws Throwable {
@@ -49,6 +64,12 @@ public class KafkaMqTraceListenerAspect {
         }
     }
 
+    /**
+     * 从监听方法参数中解析 TraceId。
+     *
+     * @param arguments 监听方法参数
+     * @return 解析到的 TraceId
+     */
     private String resolveTraceId(Object[] arguments) {
         if (arguments == null) {
             return null;

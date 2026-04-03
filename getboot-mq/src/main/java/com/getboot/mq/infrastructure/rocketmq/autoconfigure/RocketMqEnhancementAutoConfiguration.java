@@ -46,6 +46,8 @@ import java.util.List;
 /**
  * RocketMQ 增强自动配置。
  *
+ * <p>负责注册 RocketMQ 消息生产实现、事务监听器、Trace 切面以及消息转换器增强。</p>
+ *
  * @author qiheng
  */
 @AutoConfiguration
@@ -55,6 +57,14 @@ import java.util.List;
 @ConditionalOnExpression("'${getboot.mq.type:rocketmq}' == 'rocketmq' and '${getboot.mq.rocketmq.enabled:true}' == 'true'")
 public class RocketMqEnhancementAutoConfiguration {
 
+    /**
+     * 注册 RocketMQ 消息生产者实现。
+     *
+     * @param rocketMQTemplate RocketMQ 模板
+     * @param traceProperties MQ Trace 配置
+     * @param messageHeadersCustomizers 消息头定制器集合
+     * @return MQ 消息生产者
+     */
     @Bean
     @ConditionalOnMissingBean
     public MqMessageProducer mqMessageProducer(
@@ -68,6 +78,12 @@ public class RocketMqEnhancementAutoConfiguration {
         );
     }
 
+    /**
+     * 注册增强版 RocketMQ 消息转换器。
+     *
+     * @param converterCustomizers RocketMQ 消息转换器定制器集合
+     * @return 增强版 RocketMQ 消息转换器
+     */
     @Bean
     @Primary
     @ConditionalOnMissingBean(RocketMQMessageConverter.class)
@@ -86,6 +102,13 @@ public class RocketMqEnhancementAutoConfiguration {
         return converter;
     }
 
+    /**
+     * 注册按 Topic 路由的事务监听器。
+     *
+     * @param strategies Topic 事务策略集合
+     * @param traceProperties MQ Trace 配置
+     * @return 事务监听器
+     */
     @Bean
     @ConditionalOnMissingBean
     public TopicRoutingTransactionListener topicRoutingTransactionListener(
@@ -94,6 +117,12 @@ public class RocketMqEnhancementAutoConfiguration {
         return new TopicRoutingTransactionListener(strategies, traceProperties);
     }
 
+    /**
+     * 注册 RocketMQ Trace 监听切面。
+     *
+     * @param traceProperties MQ Trace 配置
+     * @return RocketMQ Trace 监听切面
+     */
     @Bean
     @ConditionalOnMissingBean
     public RocketMqTraceListenerAspect rocketMqTraceListenerAspect(MqTraceProperties traceProperties) {

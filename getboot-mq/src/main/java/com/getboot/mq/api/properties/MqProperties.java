@@ -15,6 +15,7 @@
  */
 package com.getboot.mq.api.properties;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -24,72 +25,55 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * @author qiheng
  */
+@Data
 @ConfigurationProperties(prefix = "getboot.mq")
 public class MqProperties {
 
+    /**
+     * 是否启用 MQ 能力模块。
+     */
     private boolean enabled = true;
 
+    /**
+     * 当前启用的 MQ 类型。
+     */
     private String type = "rocketmq";
 
+    /**
+     * RocketMQ 能力开关配置。
+     */
     private Rocketmq rocketmq = new Rocketmq();
 
+    /**
+     * Kafka 能力开关配置。
+     */
     private Kafka kafka = new Kafka();
 
+    /**
+     * RocketMQ 相关能力开关配置。
+     *
+     * @author qiheng
+     */
+    @Data
     public static class Rocketmq {
 
+        /**
+         * 是否启用 RocketMQ 实现。
+         */
         private boolean enabled = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
     }
 
+    /**
+     * Kafka 相关能力开关配置。
+     *
+     * @author qiheng
+     */
+    @Data
     public static class Kafka {
 
+        /**
+         * 是否启用 Kafka 实现。
+         */
         private boolean enabled = false;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Rocketmq getRocketmq() {
-        return rocketmq;
-    }
-
-    public void setRocketmq(Rocketmq rocketmq) {
-        this.rocketmq = rocketmq;
-    }
-
-    public Kafka getKafka() {
-        return kafka;
-    }
-
-    public void setKafka(Kafka kafka) {
-        this.kafka = kafka;
     }
 }

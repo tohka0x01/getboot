@@ -26,22 +26,42 @@ import java.nio.charset.StandardCharsets;
 /**
  * Topic 事务策略抽象基类。
  *
+ * <p>统一负责将 RocketMQ 消息负载转换为 JSON，便于子类聚焦事务业务逻辑。</p>
+ *
  * @author qiheng
  */
 public abstract class AbstractTransactionStrategy implements TopicTransactionStrategy {
 
+    /**
+     * 执行本地事务并将消息负载转换为 JSON。
+     *
+     * @param arg RocketMQ 回调参数
+     * @return 本地事务执行结果
+     */
     @Override
     public RocketMQLocalTransactionState executeTransaction(Object arg) {
         JSONObject jsonObject = parseMessageToJson(arg);
         return doExecuteTransaction(jsonObject);
     }
 
+    /**
+     * 执行事务回查并将消息负载转换为 JSON。
+     *
+     * @param arg RocketMQ 回调参数
+     * @return 事务回查结果
+     */
     @Override
     public RocketMQLocalTransactionState checkTransaction(Object arg) {
         JSONObject jsonObject = parseMessageToJson(arg);
         return doCheckTransaction(jsonObject);
     }
 
+    /**
+     * 将 RocketMQ 消息参数解析为 JSON 对象。
+     *
+     * @param msg RocketMQ 回调参数
+     * @return JSON 对象
+     */
     private JSONObject parseMessageToJson(Object msg) {
         Message<?> message = (Message<?>) msg;
         Object payload = message.getPayload();
@@ -51,7 +71,19 @@ public abstract class AbstractTransactionStrategy implements TopicTransactionStr
         return JSON.parseObject(JSON.toJSONString(payload));
     }
 
+    /**
+     * 执行子类定义的本地事务逻辑。
+     *
+     * @param jsonObject 消息负载 JSON
+     * @return 本地事务执行结果
+     */
     protected abstract RocketMQLocalTransactionState doExecuteTransaction(JSONObject jsonObject);
 
+    /**
+     * 执行子类定义的事务回查逻辑。
+     *
+     * @param jsonObject 消息负载 JSON
+     * @return 事务回查结果
+     */
     protected abstract RocketMQLocalTransactionState doCheckTransaction(JSONObject jsonObject);
 }

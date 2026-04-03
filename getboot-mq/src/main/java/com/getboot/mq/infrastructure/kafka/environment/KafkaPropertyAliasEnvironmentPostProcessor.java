@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class KafkaPropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回 Kafka 配置桥接属性源名称。
+     *
+     * @return Kafka 配置桥接属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootMqKafkaAliasedProperties";
     }
 
+    /**
+     * 将 GetBoot 风格的 Kafka 配置桥接为 Spring Kafka 原生配置。
+     *
+     * @param environment 当前环境
+     * @param aliasedProperties 待写入的别名属性集合
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(environment, aliasedProperties, "getboot.mq.kafka.", "spring.kafka.");

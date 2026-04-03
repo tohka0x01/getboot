@@ -35,6 +35,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 /**
  * Kafka MQ 增强自动配置。
  *
+ * <p>负责注册 Kafka 消息生产实现，以及监听侧 Trace 恢复切面。</p>
+ *
  * @author qiheng
  */
 @AutoConfiguration
@@ -44,6 +46,14 @@ import org.springframework.kafka.core.KafkaTemplate;
 @ConditionalOnExpression("'${getboot.mq.type:rocketmq}' == 'kafka' and '${getboot.mq.kafka.enabled:false}' == 'true'")
 public class KafkaMqEnhancementAutoConfiguration {
 
+    /**
+     * 注册 Kafka 消息生产者实现。
+     *
+     * @param kafkaTemplate Kafka 模板
+     * @param traceProperties MQ Trace 配置
+     * @param messageHeadersCustomizers 消息头定制器集合
+     * @return MQ 消息生产者
+     */
     @Bean
     @ConditionalOnMissingBean
     public MqMessageProducer mqMessageProducer(
@@ -57,6 +67,12 @@ public class KafkaMqEnhancementAutoConfiguration {
         );
     }
 
+    /**
+     * 注册 Kafka Trace 监听切面。
+     *
+     * @param traceProperties MQ Trace 配置
+     * @return Kafka Trace 监听切面
+     */
     @Bean
     @ConditionalOnMissingBean
     public KafkaMqTraceListenerAspect kafkaMqTraceListenerAspect(MqTraceProperties traceProperties) {

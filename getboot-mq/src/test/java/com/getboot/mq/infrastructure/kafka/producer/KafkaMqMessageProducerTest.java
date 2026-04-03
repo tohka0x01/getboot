@@ -40,13 +40,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * {@link KafkaMqMessageProducer} 测试。
+ *
+ * @author qiheng
+ */
 class KafkaMqMessageProducerTest {
 
+    /**
+     * 清理线程级 Trace 上下文。
+     */
     @AfterEach
     void tearDown() {
         TraceContextHolder.clear();
     }
 
+    /**
+     * 验证 Kafka 生产者会按逻辑目标地址写入主题、标签、Trace 和自定义消息头。
+     */
     @Test
     void shouldSendKafkaMessageWithLogicalDestinationAndTraceHeader() {
         @SuppressWarnings("unchecked")
@@ -80,6 +91,9 @@ class KafkaMqMessageProducerTest {
         assertEquals(message.getMessageId(), receipt.messageId());
     }
 
+    /**
+     * 验证 Kafka 实现会拒绝 RocketMQ 专属的延迟和事务消息操作。
+     */
     @Test
     void shouldRejectRocketMqSpecificDelayAndTransactionOperations() {
         @SuppressWarnings("unchecked")
@@ -94,14 +108,27 @@ class KafkaMqMessageProducerTest {
                 () -> producer.sendTransaction("orders:created", message, new Object()));
     }
 
+    /**
+     * 创建一个已完成的 Kafka 发送结果。
+     *
+     * @return 已完成的 Kafka 发送结果
+     */
     private CompletableFuture<SendResult<Object, Object>> completedSendFuture() {
         ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>("orders", "key", "value");
         RecordMetadata metadata = new RecordMetadata(new TopicPartition("orders", 0), 0, 0, 0, 0, 0);
         return CompletableFuture.completedFuture(new SendResult<>(producerRecord, metadata));
     }
 
+    /**
+     * 测试用消息类型。
+     */
     static class DemoMessage extends MqMessage {
 
+        /**
+         * 返回测试消息类型标识。
+         *
+         * @return 消息类型标识
+         */
         @Override
         public String getMessageType() {
             return "demo";

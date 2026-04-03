@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class RocketMqPropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回 RocketMQ 配置桥接属性源名称。
+     *
+     * @return RocketMQ 配置桥接属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootMqRocketMqAliasedProperties";
     }
 
+    /**
+     * 将 GetBoot 风格的 RocketMQ 配置桥接为底层 RocketMQ 原生配置。
+     *
+     * @param environment 当前环境
+     * @param aliasedProperties 待写入的别名属性集合
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(environment, aliasedProperties, "getboot.mq.rocketmq.", "rocketmq.");

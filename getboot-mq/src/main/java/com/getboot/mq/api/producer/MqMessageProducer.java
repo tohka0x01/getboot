@@ -31,25 +31,125 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface MqMessageProducer {
 
+    /**
+     * 按主题和标签发送消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param message 消息体
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt send(String topic, String tag, T message);
 
+    /**
+     * 按逻辑目标地址发送消息。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt send(String destination, T message);
 
+    /**
+     * 按主题和标签异步发送消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param message 消息体
+     * @return 异步发送结果
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> CompletableFuture<MqSendReceipt> asyncSend(String topic, String tag, T message);
 
+    /**
+     * 按逻辑目标地址异步发送消息。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @return 异步发送结果
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> CompletableFuture<MqSendReceipt> asyncSend(String destination, T message);
 
+    /**
+     * 按主题和标签发送延迟消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param message 消息体
+     * @param delayLevel 延迟级别
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt sendWithDelay(String topic, String tag, T message, int delayLevel);
 
+    /**
+     * 按逻辑目标地址发送延迟消息。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @param delayLevel 延迟级别
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt sendWithDelay(String destination, T message, int delayLevel);
 
+    /**
+     * 按主题和标签批量发送消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param messages 消息列表
+     * @return 最后一条消息的发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt sendBatch(String topic, String tag, List<T> messages);
 
+    /**
+     * 按主题和标签发送顺序消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param message 消息体
+     * @param hashKey 顺序键
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt sendOrderly(String topic, String tag, T message, String hashKey);
 
+    /**
+     * 按逻辑目标地址发送顺序消息。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @param hashKey 顺序键
+     * @return 发送回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqSendReceipt sendOrderly(String destination, T message, String hashKey);
 
+    /**
+     * 按逻辑目标地址发送事务消息。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @param arg 事务参数
+     * @return 事务消息回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqTransactionReceipt sendTransaction(String destination, T message, Object arg);
 
+    /**
+     * 按主题和标签发送事务消息。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @param message 消息体
+     * @param arg 事务参数
+     * @return 事务消息回执
+     * @param <T> 消息类型
+     */
     <T extends MqMessage> MqTransactionReceipt sendTransaction(String topic, String tag, T message, Object arg);
 }

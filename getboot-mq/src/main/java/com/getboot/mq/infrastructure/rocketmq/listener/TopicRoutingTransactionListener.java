@@ -29,20 +29,42 @@ import java.util.List;
 /**
  * 按 Topic 路由的事务监听器。
  *
+ * <p>根据消息头中的 Topic 选择对应事务策略，统一处理本地事务执行与回查。</p>
+ *
  * @author qiheng
  */
 @RocketMQTransactionListener
 public class TopicRoutingTransactionListener implements RocketMQLocalTransactionListener {
 
+    /**
+     * Topic 事务策略集合。
+     */
     private final List<TopicTransactionStrategy> strategies;
+
+    /**
+     * MQ Trace 上下文支撑工具。
+     */
     private final MqTraceContextSupport traceContextSupport;
 
+    /**
+     * 创建按 Topic 路由的事务监听器。
+     *
+     * @param strategies Topic 事务策略集合
+     * @param traceProperties MQ Trace 配置
+     */
     public TopicRoutingTransactionListener(List<TopicTransactionStrategy> strategies,
                                            MqTraceProperties traceProperties) {
         this.strategies = strategies;
         this.traceContextSupport = new MqTraceContextSupport(traceProperties);
     }
 
+    /**
+     * 执行本地事务。
+     *
+     * @param msg RocketMQ 消息
+     * @param arg 事务参数
+     * @return 本地事务执行结果
+     */
     @Override
     public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
         return executeWithTrace(msg, () -> {
@@ -55,6 +77,12 @@ public class TopicRoutingTransactionListener implements RocketMQLocalTransaction
         });
     }
 
+    /**
+     * 执行事务回查。
+     *
+     * @param msg RocketMQ 消息
+     * @return 事务回查结果
+     */
     @Override
     public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
         return executeWithTrace(msg, () -> {
@@ -67,6 +95,13 @@ public class TopicRoutingTransactionListener implements RocketMQLocalTransaction
         });
     }
 
+    /**
+     * 在事务回调中打开 Trace 作用域后再执行目标逻辑。
+     *
+     * @param msg RocketMQ 消息
+     * @param callback 事务回调
+     * @return 事务回调执行结果
+     */
     private RocketMQLocalTransactionState executeWithTrace(Message msg, TransactionCallback callback) {
         String traceId = traceContextSupport.resolveInboundTraceId(msg);
         try (MqTraceContextSupport.TraceScope ignored = traceContextSupport.openScope(traceId)) {
@@ -74,8 +109,17 @@ public class TopicRoutingTransactionListener implements RocketMQLocalTransaction
         }
     }
 
+    /**
+     * 事务回调接口。
+     */
     @FunctionalInterface
     private interface TransactionCallback {
+
+        /**
+         * 执行事务回调。
+         *
+         * @return 事务执行结果
+         */
         RocketMQLocalTransactionState execute();
     }
 }

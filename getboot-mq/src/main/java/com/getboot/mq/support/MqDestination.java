@@ -22,10 +22,20 @@ import org.springframework.util.StringUtils;
  *
  * <p>统一承接能力层使用的 {@code topic[:tag]} 语义，具体实现再映射到底层技术栈。</p>
  *
+ * @param destination 原始逻辑目标地址
+ * @param topic 解析后的主题
+ * @param tag 解析后的标签
  * @author qiheng
  */
 public record MqDestination(String destination, String topic, String tag) {
 
+    /**
+     * 根据主题和标签构建逻辑目标地址。
+     *
+     * @param topic 消息主题
+     * @param tag 消息标签
+     * @return 逻辑目标地址
+     */
     public static MqDestination of(String topic, String tag) {
         if (!StringUtils.hasText(topic)) {
             throw new IllegalArgumentException("Topic must not be blank.");
@@ -38,6 +48,12 @@ public record MqDestination(String destination, String topic, String tag) {
         return new MqDestination(normalizedTopic + ":" + normalizedTag, normalizedTopic, normalizedTag);
     }
 
+    /**
+     * 解析逻辑目标地址。
+     *
+     * @param destination 逻辑目标地址
+     * @return 解析后的目标地址对象
+     */
     public static MqDestination parse(String destination) {
         if (!StringUtils.hasText(destination)) {
             throw new IllegalArgumentException("Destination must not be blank.");
