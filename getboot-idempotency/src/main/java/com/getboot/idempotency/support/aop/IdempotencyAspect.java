@@ -31,18 +31,41 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 
 /**
- * Method-level idempotency aspect.
+ * 方法级幂等切面。
  *
  * @author qiheng
  */
 @Aspect
 public class IdempotencyAspect {
 
+    /**
+     * 幂等存储。
+     */
     private final IdempotencyStore idempotencyStore;
+
+    /**
+     * 幂等 key 解析器。
+     */
     private final IdempotencyKeyResolver idempotencyKeyResolver;
+
+    /**
+     * 重复请求处理器。
+     */
     private final IdempotencyDuplicateRequestHandler duplicateRequestHandler;
+
+    /**
+     * 幂等配置属性。
+     */
     private final IdempotencyProperties properties;
 
+    /**
+     * 创建方法级幂等切面。
+     *
+     * @param idempotencyStore 幂等存储
+     * @param idempotencyKeyResolver 幂等 key 解析器
+     * @param duplicateRequestHandler 重复请求处理器
+     * @param properties 幂等配置属性
+     */
     public IdempotencyAspect(IdempotencyStore idempotencyStore,
                              IdempotencyKeyResolver idempotencyKeyResolver,
                              IdempotencyDuplicateRequestHandler duplicateRequestHandler,
@@ -53,6 +76,14 @@ public class IdempotencyAspect {
         this.properties = properties;
     }
 
+    /**
+     * 在目标方法执行前后织入幂等控制。
+     *
+     * @param joinPoint 切点对象
+     * @param idempotent 幂等注解
+     * @return 目标方法返回值
+     * @throws Throwable 目标方法异常
+     */
     @Around("@annotation(idempotent)")
     public Object around(ProceedingJoinPoint joinPoint, Idempotent idempotent) throws Throwable {
         Method method = IdempotencySupport.resolveMethod(joinPoint);

@@ -16,16 +16,27 @@
 package com.getboot.idempotency.api.exception;
 
 /**
- * Idempotency exception.
+ * 幂等异常。
  *
  * @author qiheng
  */
 public class IdempotencyException extends RuntimeException {
 
+    /**
+     * 使用异常消息创建异常。
+     *
+     * @param message 异常消息
+     */
     public IdempotencyException(String message) {
         super(message);
     }
 
+    /**
+     * 使用异常消息和根因创建异常。
+     *
+     * @param message 异常消息
+     * @param cause 根因
+     */
     public IdempotencyException(String message, Throwable cause) {
         super(message, cause);
     }

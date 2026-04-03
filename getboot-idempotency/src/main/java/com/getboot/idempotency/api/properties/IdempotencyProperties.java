@@ -16,80 +16,61 @@
 package com.getboot.idempotency.api.properties;
 
 import com.getboot.idempotency.api.constant.IdempotencyConstants;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Idempotency configuration properties.
+ * 幂等配置属性。
  *
  * @author qiheng
  */
+@Data
 @ConfigurationProperties(prefix = "getboot.idempotency")
 public class IdempotencyProperties {
 
+    /**
+     * 是否启用幂等能力。
+     */
     private boolean enabled = true;
 
+    /**
+     * 当前启用的幂等存储类型。
+     */
     private String type = IdempotencyConstants.STORE_TYPE_REDIS;
 
+    /**
+     * 默认幂等记录存活时间，单位秒。
+     */
     private long defaultTtlSeconds = IdempotencyConstants.DEFAULT_TTL_SECONDS;
 
+    /**
+     * Redis 幂等配置。
+     */
     private Redis redis = new Redis();
 
+    /**
+     * 解析最终使用的 key 前缀。
+     *
+     * @return key 前缀
+     */
     public String resolveKeyPrefix() {
         return redis.getKeyPrefix();
     }
 
+    /**
+     * Redis 幂等配置项。
+     */
+    @Data
     public static class Redis {
 
+        /**
+         * 是否启用 Redis 存储实现。
+         */
         private boolean enabled = true;
 
+        /**
+         * Redis 幂等 key 前缀。
+         */
         private String keyPrefix = "getboot:idempotency";
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
-        public String getKeyPrefix() {
-            return keyPrefix;
-        }
-
-        public void setKeyPrefix(String keyPrefix) {
-            this.keyPrefix = keyPrefix;
-        }
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public long getDefaultTtlSeconds() {
-        return defaultTtlSeconds;
-    }
-
-    public void setDefaultTtlSeconds(long defaultTtlSeconds) {
-        this.defaultTtlSeconds = defaultTtlSeconds;
-    }
-
-    public Redis getRedis() {
-        return redis;
-    }
-
-    public void setRedis(Redis redis) {
-        this.redis = redis;
     }
 }

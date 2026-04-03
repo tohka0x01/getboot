@@ -23,18 +23,32 @@ import org.springframework.util.Assert;
 import java.time.Duration;
 
 /**
- * Redis-backed idempotency store.
+ * 基于 Redis 的幂等存储。
  *
  * @author qiheng
  */
 public class RedisIdempotencyStore implements IdempotencyStore {
 
+    /**
+     * Redis 模板。
+     */
     private final RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * 创建 Redis 幂等存储。
+     *
+     * @param redisTemplate Redis 模板
+     */
     public RedisIdempotencyStore(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
+    /**
+     * 读取幂等记录。
+     *
+     * @param key 幂等 key
+     * @return 幂等记录
+     */
     @Override
     public IdempotencyRecord get(String key) {
         assertKey(key);
@@ -48,6 +62,13 @@ public class RedisIdempotencyStore implements IdempotencyStore {
         throw new IllegalStateException("Unexpected idempotency record type: " + value.getClass().getName());
     }
 
+    /**
+     * 将指定 key 标记为处理中。
+     *
+     * @param key 幂等 key
+     * @param ttl 记录 TTL
+     * @return 是否标记成功
+     */
     @Override
     public boolean markProcessing(String key, Duration ttl) {
         assertKey(key);
@@ -56,6 +77,13 @@ public class RedisIdempotencyStore implements IdempotencyStore {
         return Boolean.TRUE.equals(success);
     }
 
+    /**
+     * 将指定 key 标记为已完成。
+     *
+     * @param key 幂等 key
+     * @param result 执行结果
+     * @param ttl 记录 TTL
+     */
     @Override
     public void markCompleted(String key, Object result, Duration ttl) {
         assertKey(key);
@@ -63,16 +91,31 @@ public class RedisIdempotencyStore implements IdempotencyStore {
         redisTemplate.opsForValue().set(key, IdempotencyRecord.completed(result), ttl);
     }
 
+    /**
+     * 删除幂等记录。
+     *
+     * @param key 幂等 key
+     */
     @Override
     public void delete(String key) {
         assertKey(key);
         redisTemplate.delete(key);
     }
 
+    /**
+     * 校验幂等 key。
+     *
+     * @param key 幂等 key
+     */
     private void assertKey(String key) {
         Assert.hasText(key, "Idempotency key must not be blank.");
     }
 
+    /**
+     * 校验 TTL。
+     *
+     * @param ttl 记录 TTL
+     */
     private void assertDuration(Duration ttl) {
         Assert.notNull(ttl, "Idempotency ttl must not be null.");
         Assert.isTrue(!ttl.isNegative() && !ttl.isZero(), "Idempotency ttl must be greater than 0.");

@@ -16,18 +16,30 @@
 package com.getboot.idempotency.api.constant;
 
 /**
- * Idempotency constants.
+ * 幂等常量定义。
  *
  * @author qiheng
  */
 public final class IdempotencyConstants {
 
+    /**
+     * 工具类私有构造方法。
+     */
     private IdempotencyConstants() {
     }
 
+    /**
+     * Redis 存储类型。
+     */
     public static final String STORE_TYPE_REDIS = "redis";
 
+    /**
+     * 表示使用默认 TTL 的占位值。
+     */
     public static final long USE_DEFAULT_TTL_SECONDS = -1L;
 
+    /**
+     * 默认 TTL，单位秒。
+     */
     public static final long DEFAULT_TTL_SECONDS = 300L;
 }

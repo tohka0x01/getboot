@@ -21,11 +21,19 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import java.lang.reflect.Method;
 
 /**
- * Idempotency key resolver SPI.
+ * 幂等 key 解析器 SPI。
  *
  * @author qiheng
  */
 public interface IdempotencyKeyResolver {
 
+    /**
+     * 解析幂等 key。
+     *
+     * @param joinPoint 切点对象
+     * @param method 目标方法
+     * @param idempotent 幂等注解
+     * @return 解析后的幂等 key
+     */
     String resolve(ProceedingJoinPoint joinPoint, Method method, Idempotent idempotent);
 }

@@ -52,7 +52,7 @@
 - [x] `getboot-auth`
 - [x] `getboot-limiter`
 - [x] `getboot-lock`
-- [ ] `getboot-idempotency`
+- [x] `getboot-idempotency`
 - [ ] `getboot-governance`
 - [ ] `getboot-transaction`
 - [ ] `getboot-webhook`

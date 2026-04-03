@@ -19,11 +19,19 @@ import com.getboot.idempotency.api.annotation.Idempotent;
 import com.getboot.idempotency.api.model.IdempotencyRecord;
 
 /**
- * Duplicate idempotent request handler SPI.
+ * 重复幂等请求处理器 SPI。
  *
  * @author qiheng
  */
 public interface IdempotencyDuplicateRequestHandler {
 
+    /**
+     * 处理重复请求。
+     *
+     * @param key 幂等 key
+     * @param record 幂等记录
+     * @param idempotent 幂等注解
+     * @return 处理结果
+     */
     Object handleDuplicate(String key, IdempotencyRecord record, Idempotent idempotent);
 }

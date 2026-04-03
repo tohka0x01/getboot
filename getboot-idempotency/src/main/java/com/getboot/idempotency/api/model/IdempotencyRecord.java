@@ -15,48 +15,48 @@
  */
 package com.getboot.idempotency.api.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 
 /**
- * Stored idempotent invocation record.
+ * 幂等调用记录。
  *
  * @author qiheng
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class IdempotencyRecord implements Serializable {
 
+    /**
+     * 幂等记录状态。
+     */
     private IdempotencyStatus status;
 
+    /**
+     * 首次成功执行结果。
+     */
     private Object result;
 
-    public IdempotencyRecord() {
-    }
-
-    public IdempotencyRecord(IdempotencyStatus status, Object result) {
-        this.status = status;
-        this.result = result;
-    }
-
+    /**
+     * 创建处理中记录。
+     *
+     * @return 处理中记录
+     */
     public static IdempotencyRecord processing() {
         return new IdempotencyRecord(IdempotencyStatus.PROCESSING, null);
     }
 
+    /**
+     * 创建已完成记录。
+     *
+     * @param result 执行结果
+     * @return 已完成记录
+     */
     public static IdempotencyRecord completed(Object result) {
         return new IdempotencyRecord(IdempotencyStatus.COMPLETED, result);
-    }
-
-    public IdempotencyStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(IdempotencyStatus status) {
-        this.status = status;
-    }
-
-    public Object getResult() {
-        return result;
-    }
-
-    public void setResult(Object result) {
-        this.result = result;
     }
 }

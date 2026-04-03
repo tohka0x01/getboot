@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
- * Redis idempotency auto-configuration.
+ * Redis 幂等自动配置。
  *
  * @author qiheng
  */
@@ -39,6 +39,12 @@ import org.springframework.data.redis.core.RedisTemplate;
 )
 public class RedisIdempotencyAutoConfiguration {
 
+    /**
+     * 注册 Redis 幂等存储。
+     *
+     * @param redisTemplate Redis 模板
+     * @return 幂等存储
+     */
     @Bean
     @ConditionalOnMissingBean
     public IdempotencyStore idempotencyStore(

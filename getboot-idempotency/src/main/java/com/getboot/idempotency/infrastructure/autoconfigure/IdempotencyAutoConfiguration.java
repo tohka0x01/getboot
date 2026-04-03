@@ -20,7 +20,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 /**
- * Idempotency module auto-configuration entry.
+ * 幂等模块统一自动配置入口。
  *
  * @author qiheng
  */

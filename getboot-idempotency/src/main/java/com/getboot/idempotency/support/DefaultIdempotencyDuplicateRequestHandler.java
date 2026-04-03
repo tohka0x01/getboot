@@ -22,12 +22,20 @@ import com.getboot.idempotency.api.model.IdempotencyStatus;
 import com.getboot.idempotency.spi.IdempotencyDuplicateRequestHandler;
 
 /**
- * Default duplicate idempotent request handler.
+ * 默认重复请求处理器。
  *
  * @author qiheng
  */
 public class DefaultIdempotencyDuplicateRequestHandler implements IdempotencyDuplicateRequestHandler {
 
+    /**
+     * 处理重复幂等请求。
+     *
+     * @param key 幂等 key
+     * @param record 幂等记录
+     * @param idempotent 幂等注解
+     * @return 已缓存结果
+     */
     @Override
     public Object handleDuplicate(String key, IdempotencyRecord record, Idempotent idempotent) {
         if (record == null || record.getStatus() == null) {

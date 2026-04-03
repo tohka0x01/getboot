@@ -32,7 +32,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * Idempotency core auto-configuration.
+ * 幂等核心自动配置。
  *
  * @author qiheng
  */
@@ -42,18 +42,37 @@ import org.springframework.context.annotation.Bean;
 @EnableConfigurationProperties(IdempotencyProperties.class)
 public class IdempotencyCoreAutoConfiguration {
 
+    /**
+     * 注册默认幂等 key 解析器。
+     *
+     * @return 幂等 key 解析器
+     */
     @Bean
     @ConditionalOnMissingBean
     public IdempotencyKeyResolver idempotencyKeyResolver() {
         return new SpelIdempotencyKeyResolver();
     }
 
+    /**
+     * 注册默认重复请求处理器。
+     *
+     * @return 重复请求处理器
+     */
     @Bean
     @ConditionalOnMissingBean
     public IdempotencyDuplicateRequestHandler idempotencyDuplicateRequestHandler() {
         return new DefaultIdempotencyDuplicateRequestHandler();
     }
 
+    /**
+     * 注册幂等切面。
+     *
+     * @param idempotencyStore 幂等存储
+     * @param idempotencyKeyResolver 幂等 key 解析器
+     * @param duplicateRequestHandler 重复请求处理器
+     * @param properties 幂等配置属性
+     * @return 幂等切面
+     */
     @Bean
     @ConditionalOnBean(IdempotencyStore.class)
     @ConditionalOnMissingBean

@@ -20,17 +20,42 @@ import com.getboot.idempotency.api.model.IdempotencyRecord;
 import java.time.Duration;
 
 /**
- * Idempotency store SPI.
+ * 幂等存储 SPI。
  *
  * @author qiheng
  */
 public interface IdempotencyStore {
 
+    /**
+     * 读取幂等记录。
+     *
+     * @param key 幂等 key
+     * @return 幂等记录
+     */
     IdempotencyRecord get(String key);
 
+    /**
+     * 将指定 key 标记为处理中。
+     *
+     * @param key 幂等 key
+     * @param ttl 记录 TTL
+     * @return 是否标记成功
+     */
     boolean markProcessing(String key, Duration ttl);
 
+    /**
+     * 将指定 key 标记为已完成。
+     *
+     * @param key 幂等 key
+     * @param result 执行结果
+     * @param ttl 记录 TTL
+     */
     void markCompleted(String key, Object result, Duration ttl);
 
+    /**
+     * 删除幂等记录。
+     *
+     * @param key 幂等 key
+     */
     void delete(String key);
 }

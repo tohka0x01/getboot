@@ -27,15 +27,24 @@ import org.springframework.util.StringUtils;
 import java.lang.reflect.Method;
 
 /**
- * Shared idempotency helper methods.
+ * 幂等公共辅助方法。
  *
  * @author qiheng
  */
 public final class IdempotencySupport {
 
+    /**
+     * 工具类私有构造方法。
+     */
     private IdempotencySupport() {
     }
 
+    /**
+     * 解析代理对象背后的最具体方法。
+     *
+     * @param joinPoint 切点对象
+     * @return 目标方法
+     */
     public static Method resolveMethod(ProceedingJoinPoint joinPoint) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
@@ -46,6 +55,16 @@ public final class IdempotencySupport {
         return AopUtils.getMostSpecificMethod(method, target.getClass());
     }
 
+    /**
+     * 解析完整幂等 key。
+     *
+     * @param joinPoint 切点对象
+     * @param method 目标方法
+     * @param idempotent 幂等注解
+     * @param keyResolver 幂等 key 解析器
+     * @param keyPrefix key 前缀
+     * @return 完整幂等 key
+     */
     public static String resolveFullKey(ProceedingJoinPoint joinPoint,
                                         Method method,
                                         Idempotent idempotent,
@@ -56,6 +75,13 @@ public final class IdempotencySupport {
         return buildFullKey(keyPrefix, scene, resolvedKey);
     }
 
+    /**
+     * 解析幂等场景名。
+     *
+     * @param method 目标方法
+     * @param idempotent 幂等注解
+     * @return 场景名
+     */
     public static String resolveScene(Method method, Idempotent idempotent) {
         if (StringUtils.hasText(idempotent.scene())) {
             return idempotent.scene().trim();
@@ -63,6 +89,14 @@ public final class IdempotencySupport {
         return method.getDeclaringClass().getSimpleName() + "." + method.getName();
     }
 
+    /**
+     * 拼接完整幂等 key。
+     *
+     * @param keyPrefix key 前缀
+     * @param scene 幂等场景
+     * @param resolvedKey 已解析业务 key
+     * @return 完整幂等 key
+     */
     public static String buildFullKey(String keyPrefix, String scene, String resolvedKey) {
         if (!StringUtils.hasText(keyPrefix)) {
             throw new IdempotencyException("Idempotent key prefix must not be empty.");
@@ -76,6 +110,13 @@ public final class IdempotencySupport {
         return keyPrefix + ":" + scene + "#" + resolvedKey;
     }
 
+    /**
+     * 解析最终使用的 TTL。
+     *
+     * @param idempotent 幂等注解
+     * @param defaultTtlSeconds 默认 TTL
+     * @return TTL 秒数
+     */
     public static long resolveTtlSeconds(Idempotent idempotent, long defaultTtlSeconds) {
         long ttlSeconds = idempotent.ttlSeconds();
         if (ttlSeconds == IdempotencyConstants.USE_DEFAULT_TTL_SECONDS) {
