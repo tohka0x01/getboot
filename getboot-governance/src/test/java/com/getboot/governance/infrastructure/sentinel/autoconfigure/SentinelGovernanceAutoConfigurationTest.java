@@ -24,11 +24,20 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Sentinel 治理自动配置测试。
+ */
 class SentinelGovernanceAutoConfigurationTest {
 
+    /**
+     * 测试用上下文启动器。
+     */
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(SentinelGovernanceAutoConfiguration.class));
 
+    /**
+     * 验证治理能力开启时会注册 Sentinel 切面。
+     */
     @Test
     void shouldRegisterSentinelAspectWhenGovernanceEnabled() {
         contextRunner
@@ -42,6 +51,9 @@ class SentinelGovernanceAutoConfigurationTest {
                 });
     }
 
+    /**
+     * 验证治理能力关闭时不会注册 Sentinel 切面。
+     */
     @Test
     void shouldSkipSentinelAspectWhenGovernanceDisabled() {
         contextRunner

@@ -19,9 +19,9 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * 流量治理 starter 配置。
+ * 流量治理配置属性。
  *
- * <p>对外保持能力层前缀，当前内部实现基于 Sentinel。</p>
+ * <p>对外保持统一的治理配置前缀，当前内部实现基于 Sentinel。</p>
  *
  * @author qiheng
  */
@@ -39,8 +39,12 @@ public class GovernanceProperties {
      */
     private final Sentinel sentinel = new Sentinel();
 
+    /**
+     * Sentinel 配置项。
+     */
     @Data
     public static class Sentinel {
+
         /**
          * 是否启用 Sentinel 实现。
          */
@@ -92,8 +96,12 @@ public class GovernanceProperties {
         private final Management management = new Management();
     }
 
+    /**
+     * Sentinel 传输层配置。
+     */
     @Data
     public static class Transport {
+
         /**
          * Sentinel Dashboard 地址。
          */
@@ -115,8 +123,12 @@ public class GovernanceProperties {
         private Integer heartbeatIntervalMs;
     }
 
+    /**
+     * Sentinel Web 拦截器配置。
+     */
     @Data
     public static class Filter {
+
         /**
          * 是否启用 Web 拦截器。
          */
@@ -128,24 +140,36 @@ public class GovernanceProperties {
         private int order = Integer.MIN_VALUE;
     }
 
+    /**
+     * OpenFeign 适配配置。
+     */
     @Data
     public static class OpenFeign {
+
         /**
          * 是否启用 OpenFeign 降级桥接。
          */
         private boolean enabled = false;
     }
 
+    /**
+     * RestTemplate 适配配置。
+     */
     @Data
     public static class RestTemplate {
+
         /**
          * 是否启用 RestTemplate 保护。
          */
         private boolean enabled = true;
     }
 
+    /**
+     * 管理端点适配配置。
+     */
     @Data
     public static class Management {
+
         /**
          * Sentinel Actuator 端点配置。
          */
@@ -157,16 +181,24 @@ public class GovernanceProperties {
         private final Health health = new Health();
     }
 
+    /**
+     * Sentinel Actuator 端点配置。
+     */
     @Data
     public static class Endpoint {
+
         /**
          * 是否暴露 Sentinel 端点。
          */
         private boolean enabled = true;
     }
 
+    /**
+     * Sentinel 健康检查配置。
+     */
     @Data
     public static class Health {
+
         /**
          * 是否启用 Sentinel 健康检查。
          */

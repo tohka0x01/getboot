@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class SentinelPropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回别名属性源名称。
+     *
+     * @return 属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootGovernanceSentinelAliasedProperties";
     }
 
+    /**
+     * 写入治理配置到 Sentinel 原生配置的别名映射。
+     *
+     * @param environment Spring 环境
+     * @param aliasedProperties 别名属性集合
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(
@@ -45,20 +56,40 @@ public class SentinelPropertyAliasEnvironmentPostProcessor extends PropertyAlias
                         && !suffix.startsWith("rest-template.")
                         && !suffix.startsWith("management.")
         );
-        aliasProperty(environment, aliasedProperties,
+        aliasProperty(
+                environment,
+                aliasedProperties,
                 "getboot.governance.sentinel.openfeign.enabled",
-                "feign.sentinel.enabled");
-        aliasProperty(environment, aliasedProperties,
+                "feign.sentinel.enabled"
+        );
+        aliasProperty(
+                environment,
+                aliasedProperties,
                 "getboot.governance.sentinel.rest-template.enabled",
-                "resttemplate.sentinel.enabled");
-        aliasProperty(environment, aliasedProperties,
+                "resttemplate.sentinel.enabled"
+        );
+        aliasProperty(
+                environment,
+                aliasedProperties,
                 "getboot.governance.sentinel.management.endpoint.enabled",
-                "management.endpoint.sentinel.enabled");
-        aliasProperty(environment, aliasedProperties,
+                "management.endpoint.sentinel.enabled"
+        );
+        aliasProperty(
+                environment,
+                aliasedProperties,
                 "getboot.governance.sentinel.management.health.enabled",
-                "management.health.sentinel.enabled");
+                "management.health.sentinel.enabled"
+        );
     }
 
+    /**
+     * 在目标属性未显式配置时写入单个别名属性。
+     *
+     * @param environment Spring 环境
+     * @param aliasedProperties 别名属性集合
+     * @param sourcePropertyName 源属性名
+     * @param targetPropertyName 目标属性名
+     */
     private void aliasProperty(ConfigurableEnvironment environment,
                                Map<String, Object> aliasedProperties,
                                String sourcePropertyName,

@@ -33,7 +33,12 @@ import org.springframework.context.annotation.Bean;
  */
 @AutoConfiguration
 @ConditionalOnClass(name = "com.alibaba.cloud.sentinel.custom.SentinelAutoConfiguration")
-@ConditionalOnProperty(prefix = "getboot.governance", name = {"enabled", "sentinel.enabled"}, havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+        prefix = "getboot.governance",
+        name = {"enabled", "sentinel.enabled"},
+        havingValue = "true",
+        matchIfMissing = true
+)
 @EnableConfigurationProperties(GovernanceProperties.class)
 public class SentinelGovernanceAutoConfiguration {
 

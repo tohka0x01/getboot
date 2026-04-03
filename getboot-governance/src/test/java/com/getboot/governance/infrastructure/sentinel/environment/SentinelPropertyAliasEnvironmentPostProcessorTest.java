@@ -26,8 +26,14 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+/**
+ * Sentinel 配置别名处理器测试。
+ */
 class SentinelPropertyAliasEnvironmentPostProcessorTest {
 
+    /**
+     * 验证治理配置会被映射到预期的原生前缀。
+     */
     @Test
     void shouldAliasSentinelPropertiesToExpectedNativePrefixes() {
         ConfigurableEnvironment environment = new StandardEnvironment();
@@ -55,6 +61,9 @@ class SentinelPropertyAliasEnvironmentPostProcessorTest {
         assertFalse(environment.containsProperty("spring.cloud.sentinel.management.health.enabled"));
     }
 
+    /**
+     * 验证已存在的原生配置不会被别名配置覆盖。
+     */
     @Test
     void shouldNotOverrideExistingNativeProperties() {
         ConfigurableEnvironment environment = new StandardEnvironment();
