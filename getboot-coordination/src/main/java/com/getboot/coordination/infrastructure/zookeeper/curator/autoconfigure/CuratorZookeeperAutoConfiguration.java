@@ -29,7 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.util.StringUtils;
 
 /**
- * Curator ZooKeeper auto configuration.
+ * Curator ZooKeeper 自动配置。
  *
  * @author qiheng
  */
@@ -39,6 +39,12 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(CuratorZookeeperProperties.class)
 public class CuratorZookeeperAutoConfiguration {
 
+    /**
+     * 注册 CuratorFramework。
+     *
+     * @param properties ZooKeeper 配置
+     * @return CuratorFramework 实例
+     */
     @Bean(destroyMethod = "close", initMethod = "start")
     @ConditionalOnMissingBean
     public CuratorFramework curatorFramework(CuratorZookeeperProperties properties) {
@@ -61,6 +67,12 @@ public class CuratorZookeeperAutoConfiguration {
         return builder.build();
     }
 
+    /**
+     * 创建 Curator 重试策略。
+     *
+     * @param properties ZooKeeper 配置
+     * @return 重试策略
+     */
     private RetryPolicy createRetryPolicy(CuratorZookeeperProperties properties) {
         CuratorZookeeperProperties.Retry retry = properties.getRetry();
         return new ExponentialBackoffRetry(

@@ -15,98 +15,67 @@
  */
 package com.getboot.coordination.infrastructure.zookeeper.curator.properties;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Curator ZooKeeper configuration properties.
+ * Curator ZooKeeper 配置。
  *
  * @author qiheng
  */
+@Data
 @ConfigurationProperties(prefix = "getboot.coordination.zookeeper")
 public class CuratorZookeeperProperties {
 
+    /**
+     * 是否启用 ZooKeeper / Curator。
+     */
     private boolean enabled = false;
+
+    /**
+     * ZooKeeper 连接地址。
+     */
     private String connectString;
+
+    /**
+     * ZooKeeper 命名空间。
+     */
     private String namespace;
+
+    /**
+     * 会话超时时间，单位毫秒。
+     */
     private int sessionTimeoutMs = 60000;
+
+    /**
+     * 连接超时时间，单位毫秒。
+     */
     private int connectionTimeoutMs = 15000;
+
+    /**
+     * 重试配置。
+     */
     private Retry retry = new Retry();
 
+    /**
+     * Curator 重试配置。
+     */
+    @Data
     public static class Retry {
+
+        /**
+         * 首次重试休眠时间，单位毫秒。
+         */
         private int baseSleepTimeMs = 1000;
+
+        /**
+         * 最大重试次数。
+         */
         private int maxRetries = 3;
+
+        /**
+         * 最大休眠时间，单位毫秒。
+         */
         private int maxSleepMs = 8000;
-
-        public int getBaseSleepTimeMs() {
-            return baseSleepTimeMs;
-        }
-
-        public void setBaseSleepTimeMs(int baseSleepTimeMs) {
-            this.baseSleepTimeMs = baseSleepTimeMs;
-        }
-
-        public int getMaxRetries() {
-            return maxRetries;
-        }
-
-        public void setMaxRetries(int maxRetries) {
-            this.maxRetries = maxRetries;
-        }
-
-        public int getMaxSleepMs() {
-            return maxSleepMs;
-        }
-
-        public void setMaxSleepMs(int maxSleepMs) {
-            this.maxSleepMs = maxSleepMs;
-        }
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getConnectString() {
-        return connectString;
-    }
-
-    public void setConnectString(String connectString) {
-        this.connectString = connectString;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public int getSessionTimeoutMs() {
-        return sessionTimeoutMs;
-    }
-
-    public void setSessionTimeoutMs(int sessionTimeoutMs) {
-        this.sessionTimeoutMs = sessionTimeoutMs;
-    }
-
-    public int getConnectionTimeoutMs() {
-        return connectionTimeoutMs;
-    }
-
-    public void setConnectionTimeoutMs(int connectionTimeoutMs) {
-        this.connectionTimeoutMs = connectionTimeoutMs;
-    }
-
-    public Retry getRetry() {
-        return retry;
-    }
-
-    public void setRetry(Retry retry) {
-        this.retry = retry;
     }
 }
