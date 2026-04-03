@@ -26,8 +26,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+/**
+ * {@link OutboundHttpHeadersResolver} 测试。
+ *
+ * @author qiheng
+ */
 class OutboundHttpHeadersResolverTest {
 
+    /**
+     * 验证解析器会同时生成 Trace 请求头和通用请求头。
+     */
     @Test
     void shouldResolveTraceHeaderAndCommonHeaders() {
         OutboundHttpHeadersContributor contributor = (headers, context) ->
@@ -42,6 +50,9 @@ class OutboundHttpHeadersResolverTest {
         assertEquals(List.of("trace-001"), headers.get("X-Trace-Id"));
     }
 
+    /**
+     * 验证缺少 TraceId 时仍保留通用请求头。
+     */
     @Test
     void shouldKeepCommonHeadersWhenTraceIdMissing() {
         OutboundHttpHeadersContributor contributor = (headers, context) ->

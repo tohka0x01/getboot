@@ -37,10 +37,28 @@ import java.util.List;
  */
 public class TraceFeignRequestInterceptor implements RequestInterceptor {
 
+    /**
+     * Feign Trace 配置。
+     */
     private final OpenFeignTraceProperties traceProperties;
+
+    /**
+     * 出站请求头解析器。
+     */
     private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
+
+    /**
+     * Feign 请求定制器集合。
+     */
     private final List<OpenFeignTraceRequestCustomizer> customizers;
 
+    /**
+     * 创建 Feign Trace 请求拦截器。
+     *
+     * @param traceProperties Feign Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
+     * @param customizers Feign 请求定制器集合
+     */
     public TraceFeignRequestInterceptor(
             OpenFeignTraceProperties traceProperties,
             OutboundHttpHeadersResolver outboundHttpHeadersResolver,
@@ -50,6 +68,11 @@ public class TraceFeignRequestInterceptor implements RequestInterceptor {
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
+    /**
+     * 将公共请求头和 Trace 请求头写入 Feign 请求模板。
+     *
+     * @param requestTemplate Feign 请求模板
+     */
     @Override
     public void apply(RequestTemplate requestTemplate) {
         String traceId = TraceContextHolder.getTraceId();

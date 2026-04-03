@@ -40,10 +40,28 @@ import java.util.List;
  */
 public class TraceRestTemplateInterceptor implements ClientHttpRequestInterceptor {
 
+    /**
+     * RestTemplate Trace 配置。
+     */
     private final RestTemplateTraceProperties properties;
+
+    /**
+     * 出站请求头解析器。
+     */
     private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
+
+    /**
+     * RestTemplate 请求定制器集合。
+     */
     private final List<RestTemplateTraceRequestCustomizer> customizers;
 
+    /**
+     * 创建 RestTemplate Trace 拦截器。
+     *
+     * @param properties RestTemplate Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
+     * @param customizers RestTemplate 请求定制器集合
+     */
     public TraceRestTemplateInterceptor(
             RestTemplateTraceProperties properties,
             OutboundHttpHeadersResolver outboundHttpHeadersResolver,
@@ -53,6 +71,15 @@ public class TraceRestTemplateInterceptor implements ClientHttpRequestIntercepto
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
+    /**
+     * 将公共请求头和 Trace 请求头写入 RestTemplate 请求。
+     *
+     * @param request 当前请求
+     * @param body 请求体
+     * @param execution 执行器
+     * @return 客户端响应
+     * @throws IOException 请求执行失败时抛出
+     */
     @Override
     public ClientHttpResponse intercept(
             HttpRequest request,

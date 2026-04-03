@@ -47,6 +47,7 @@ public class RestTemplateHttpClientAutoConfiguration {
      * 注册 RestTemplate Trace 拦截器。
      *
      * @param properties Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
      * @param customizers 请求定制器列表
      * @return RestTemplate 拦截器
      */

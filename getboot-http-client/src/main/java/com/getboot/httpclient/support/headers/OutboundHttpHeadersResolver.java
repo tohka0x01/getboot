@@ -32,8 +32,16 @@ import java.util.List;
  */
 public class OutboundHttpHeadersResolver {
 
+    /**
+     * 通用出站请求头贡献器集合。
+     */
     private final List<OutboundHttpHeadersContributor> contributors;
 
+    /**
+     * 创建出站请求头解析器。
+     *
+     * @param contributors 通用出站请求头贡献器集合
+     */
     public OutboundHttpHeadersResolver(List<OutboundHttpHeadersContributor> contributors) {
         this.contributors = contributors == null ? List.of() : List.copyOf(contributors);
     }

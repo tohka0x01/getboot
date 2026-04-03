@@ -46,6 +46,7 @@ public class WebClientHttpClientAutoConfiguration {
      * 注册 WebClient Trace 过滤器。
      *
      * @param properties Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
      * @param customizers 请求定制器列表
      * @return 过滤器
      */

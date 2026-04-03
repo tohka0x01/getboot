@@ -59,7 +59,7 @@
 
 ### Communication
 
-- [ ] `getboot-http-client`
+- [x] `getboot-http-client`
 - [ ] `getboot-rpc`
 - [ ] `getboot-mq`
 - [ ] `getboot-job`

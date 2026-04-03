@@ -45,6 +45,7 @@ public class OpenFeignHttpClientAutoConfiguration {
      * 注册 Feign TraceId 透传拦截器。
      *
      * @param traceProperties Feign Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
      * @param customizers 请求定制器列表
      * @return Feign 请求拦截器
      */

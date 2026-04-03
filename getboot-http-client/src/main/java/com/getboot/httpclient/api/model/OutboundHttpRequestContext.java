@@ -15,6 +15,8 @@
  */
 package com.getboot.httpclient.api.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 /**
@@ -24,32 +26,30 @@ import org.springframework.util.StringUtils;
  *
  * @author qiheng
  */
+@Getter
+@RequiredArgsConstructor
 public class OutboundHttpRequestContext {
 
+    /**
+     * 当前出站请求使用的客户端类型。
+     */
     private final OutboundHttpClientType clientType;
+
+    /**
+     * 当前链路 TraceId。
+     */
     private final String traceId;
+
+    /**
+     * Trace 请求头名称。
+     */
     private final String traceHeaderName;
 
-    public OutboundHttpRequestContext(OutboundHttpClientType clientType,
-                                      String traceId,
-                                      String traceHeaderName) {
-        this.clientType = clientType;
-        this.traceId = traceId;
-        this.traceHeaderName = traceHeaderName;
-    }
-
-    public OutboundHttpClientType getClientType() {
-        return clientType;
-    }
-
-    public String getTraceId() {
-        return traceId;
-    }
-
-    public String getTraceHeaderName() {
-        return traceHeaderName;
-    }
-
+    /**
+     * 判断当前上下文是否携带有效 TraceId。
+     *
+     * @return 存在有效 TraceId 时返回 {@code true}
+     */
     public boolean hasTraceId() {
         return StringUtils.hasText(traceId);
     }

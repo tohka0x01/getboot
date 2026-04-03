@@ -28,8 +28,16 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+/**
+ * {@link TraceFeignRequestInterceptor} 测试。
+ *
+ * @author qiheng
+ */
 class TraceFeignRequestInterceptorTest {
 
+    /**
+     * 验证没有 TraceId 时仍会应用通用出站请求头。
+     */
     @Test
     void shouldApplyCommonHeadersWithoutTraceId() {
         TraceFeignRequestInterceptor interceptor = new TraceFeignRequestInterceptor(
@@ -45,6 +53,9 @@ class TraceFeignRequestInterceptorTest {
         assertFalse(requestTemplate.headers().containsKey("X-Trace-Id"));
     }
 
+    /**
+     * 验证存在 TraceId 时会同时应用 Trace 请求头、通用请求头和 Feign 定制逻辑。
+     */
     @Test
     void shouldApplyTraceHeaderCommonHeadersAndFeignCustomizer() {
         String previousTraceId = TraceContextHolder.bindTraceId("trace-002");

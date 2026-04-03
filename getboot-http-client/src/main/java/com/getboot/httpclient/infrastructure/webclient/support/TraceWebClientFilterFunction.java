@@ -40,10 +40,28 @@ import java.util.List;
  */
 public class TraceWebClientFilterFunction implements ExchangeFilterFunction {
 
+    /**
+     * WebClient Trace 配置。
+     */
     private final WebClientTraceProperties properties;
+
+    /**
+     * 出站请求头解析器。
+     */
     private final OutboundHttpHeadersResolver outboundHttpHeadersResolver;
+
+    /**
+     * WebClient 请求定制器集合。
+     */
     private final List<WebClientTraceRequestCustomizer> customizers;
 
+    /**
+     * 创建 WebClient Trace 过滤器。
+     *
+     * @param properties WebClient Trace 配置
+     * @param outboundHttpHeadersResolver 出站请求头解析器
+     * @param customizers WebClient 请求定制器集合
+     */
     public TraceWebClientFilterFunction(
             WebClientTraceProperties properties,
             OutboundHttpHeadersResolver outboundHttpHeadersResolver,
@@ -53,6 +71,13 @@ public class TraceWebClientFilterFunction implements ExchangeFilterFunction {
         this.customizers = customizers == null ? List.of() : List.copyOf(customizers);
     }
 
+    /**
+     * 将公共请求头和 Trace 请求头写入 WebClient 请求。
+     *
+     * @param request 当前请求
+     * @param next 下游交换函数
+     * @return 响应流
+     */
     @Override
     public Mono<ClientResponse> filter(ClientRequest request, ExchangeFunction next) {
         String traceId = TraceContextHolder.getTraceId();
