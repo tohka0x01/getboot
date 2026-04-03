@@ -30,7 +30,8 @@
 2. `getboot-sms`
 3. `getboot-storage`
 4. `getboot-search`
-5. 其余模块按模块地图顺序推进
+5. `getboot-ai`
+6. 其余模块按模块地图顺序推进
 
 ## 模块清单
 
@@ -47,6 +48,7 @@
 - [x] `getboot-database`
 - [x] `getboot-storage`
 - [x] `getboot-sms`
+- [x] `getboot-ai`
 - [x] `getboot-search`
 - [x] `getboot-observability`
 

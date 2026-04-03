@@ -5,7 +5,7 @@
 当前模块推进入口：
 
 - 统一看 [`docs/MODULE_ROADMAP.md`](./MODULE_ROADMAP.md)
-- 当前优先模块：`getboot-ai`
+- 路线图首批模块已完成首版落地，后续候选能力继续在路线图内评估
 
 已收敛到文档的内容：
 

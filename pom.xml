@@ -70,6 +70,7 @@
         <module>getboot-idempotency</module>
         <module>getboot-storage</module>
         <module>getboot-sms</module>
+        <module>getboot-ai</module>
         <module>getboot-search</module>
         <module>getboot-mq</module>
         <module>getboot-rpc</module>
@@ -164,6 +165,11 @@
             <dependency>
                 <groupId>com.dt</groupId>
                 <artifactId>getboot-sms</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dt</groupId>
+                <artifactId>getboot-ai</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

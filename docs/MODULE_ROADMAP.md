@@ -11,9 +11,9 @@
 
 ## 当前落地顺序
 
-- 已完成首版：`getboot-idempotency`、`getboot-storage`、`getboot-sms`、`getboot-search`
-- 当前优先：`getboot-ai`
-- 下一批候选能力仍以这里为准，后续如新增模块再继续补充
+- 已完成首版：`getboot-idempotency`、`getboot-storage`、`getboot-sms`、`getboot-search`、`getboot-ai`
+- 当前没有新的 P1 模块；后续候选能力仍以这里为准，继续按边界和复用价值评估
+- 如果后续继续扩展，优先回看 `getboot-mail` 等候选模块是否值得进入下一轮
 
 补充：
 
@@ -82,7 +82,7 @@
 - `getboot-search`
   首版已按索引写入、基础查询和分页落地，未扩展 DSL 全量覆盖
 - `getboot-ai`
-  先做 Chat / Embedding / Rerank 三条稳定入口，不先做多 Agent
+  首版已按 Chat / Embedding / Rerank 三条稳定入口落地，当前 Rerank 基于 Embedding 相似度完成
 - `getboot-sms`
   先做单发、批量发送、验证码模板，不先做营销短信编排
 

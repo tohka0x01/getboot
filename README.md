@@ -283,6 +283,7 @@ transportMode: "NIO"
 | 幂等去重 | `getboot-idempotency` | 适合下单、支付、回调防重；当前第一版同 key 执行中请求直接拦截，成功后重复请求直接返回缓存结果 |
 | 对象存储上传 / 预签名 | `getboot-storage` | 统一从 `StorageOperator` 进入；当前第一版覆盖 MinIO 上传、下载、删除、元数据和预签名 URL |
 | 短信验证码 / 通知短信 | `getboot-sms` | 统一从 `SmsOperator` 进入；当前第一版覆盖阿里云单发、批量发送和验证码模板场景 |
+| AI Chat / Embedding / Rerank | `getboot-ai` | 统一从 `AiOperator` 进入；当前第一版覆盖 OpenAI Chat、Embedding 和基于 Embedding 相似度的 Rerank |
 | 搜索索引写入 / 基础查询 | `getboot-search` | 统一从 `SearchOperator` 进入；当前第一版覆盖索引写入、文档删除、基础查询、分页、排序和高亮 |
 | Webhook 安全编排 | `getboot-webhook` | 需要准备 Redis 幂等存储和限流能力，模块内部会复用 `getboot-idempotency` 与 `getboot-limiter` |
 | Dubbo 服务 | `getboot-rpc` + `getboot-observability` | 重点看 RPC 认证、Trace 透传和序列化安全 |
@@ -316,6 +317,8 @@ transportMode: "NIO"
   对象上传、下载、删除、元数据读取和预签名 URL
 - [`getboot-sms`](./getboot-sms/README.md)
   短信发送门面、验证码模板配置和阿里云短信接入
+- [`getboot-ai`](./getboot-ai/README.md)
+  Chat、Embedding、Rerank 门面、提示词模板渲染和 OpenAI 适配
 - [`getboot-search`](./getboot-search/README.md)
   搜索索引写入、文档删除、基础查询、分页、排序和高亮门面
 - [`getboot-observability`](./getboot-observability/README.md)
@@ -413,9 +416,10 @@ transportMode: "NIO"
 
 后续会继续围绕“新项目常见基础能力”推进，优先关注：
 
+- 路线图首批模块 `getboot-idempotency / getboot-storage / getboot-sms / getboot-search / getboot-ai` 已完成首版落地
 - 现有核心模块优先在各自 README 与模块内文档继续收口，不再把泛化演进项挂在根级 TODO
-- 新模块边界与落地顺序，优先看 [`docs/MODULE_ROADMAP.md`](./docs/MODULE_ROADMAP.md)
+- 后续新增模块边界与候选顺序，继续看 [`docs/MODULE_ROADMAP.md`](./docs/MODULE_ROADMAP.md)
 - 常用能力是否单拆模块，优先看 [`docs/COMMON_CAPABILITY_ASSESSMENT.md`](./docs/COMMON_CAPABILITY_ASSESSMENT.md)
-- 根级 `TODO` 只保留仓库级尾项与当前推进说明；当前模块推进优先落在 [`docs/MODULE_ROADMAP.md`](./docs/MODULE_ROADMAP.md)
+- 根级 `TODO` 只保留仓库级尾项与当前推进说明；当前没有新的仓库级尾项
 
 具体模块路线继续收敛在 [`docs/MODULE_ROADMAP.md`](./docs/MODULE_ROADMAP.md)，仓库级尾项继续看 [`docs/TODO.md`](./docs/TODO.md)。
