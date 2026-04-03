@@ -34,16 +34,35 @@ import org.springframework.data.mongodb.core.MongoTemplate;
  */
 public class MongoDatabaseInitializer {
 
+    /**
+     * 日志记录器。
+     */
     private static final Logger log = LoggerFactory.getLogger(MongoDatabaseInitializer.class);
 
+    /**
+     * MongoTemplate 实例。
+     */
     private final MongoTemplate mongoTemplate;
+
+    /**
+     * 初始化配置。
+     */
     private final DatabaseProperties.Init properties;
 
+    /**
+     * 创建 MongoDB 初始化器。
+     *
+     * @param mongoTemplate MongoTemplate 实例
+     * @param properties 初始化配置
+     */
     public MongoDatabaseInitializer(MongoTemplate mongoTemplate, DatabaseProperties.Init properties) {
         this.mongoTemplate = mongoTemplate;
         this.properties = properties;
     }
 
+    /**
+     * 在 Bean 初始化后立即执行 MongoDB 预热。
+     */
     @PostConstruct
     @Order(1)
     public void init() {
@@ -58,16 +77,21 @@ public class MongoDatabaseInitializer {
             long costTime = System.currentTimeMillis() - startTime;
             log.info("MongoDB initialized successfully. database={}, result={}, cost={}ms",
                     mongoTemplate.getDb().getName(), result.toJson(), costTime);
-        } catch (Exception ex) {
+        } catch (Exception exception) {
             long costTime = System.currentTimeMillis() - startTime;
-            log.error("MongoDB initialization failed. cost={}ms", costTime, ex);
+            log.error("MongoDB initialization failed. cost={}ms", costTime, exception);
             if (properties.isStrictMode()) {
-                throw new RuntimeException("MongoDB initialization failed during startup.", ex);
+                throw new RuntimeException("MongoDB initialization failed during startup.", exception);
             }
             log.warn("MongoDB initialization failed, but the application will continue in non-strict mode.");
         }
     }
 
+    /**
+     * 在应用启动完成后执行一次 MongoDB 连通性校验。
+     *
+     * @param event 应用启动完成事件
+     */
     @EventListener(ApplicationReadyEvent.class)
     @Order(2)
     public void validateAfterStartup(ApplicationReadyEvent event) {
@@ -80,11 +104,16 @@ public class MongoDatabaseInitializer {
             Document result = ping();
             log.info("MongoDB validation after startup succeeded. database={}, result={}",
                     mongoTemplate.getDb().getName(), result.toJson());
-        } catch (Exception ex) {
-            log.warn("MongoDB validation after startup failed: {}", ex.getMessage());
+        } catch (Exception exception) {
+            log.warn("MongoDB validation after startup failed: {}", exception.getMessage());
         }
     }
 
+    /**
+     * 执行 MongoDB ping 命令。
+     *
+     * @return ping 结果
+     */
     private Document ping() {
         return mongoTemplate.executeCommand(new Document("ping", 1));
     }

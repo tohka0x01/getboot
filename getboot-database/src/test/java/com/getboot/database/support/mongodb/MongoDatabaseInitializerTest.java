@@ -30,8 +30,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * {@link MongoDatabaseInitializer} 测试。
+ *
+ * @author qiheng
+ */
 class MongoDatabaseInitializerTest {
 
+    /**
+     * 验证初始化阶段与启动后校验阶段都会执行 MongoDB ping。
+     */
     @Test
     void shouldPingMongoDatabaseDuringInitialization() {
         MongoTemplate mongoTemplate = mock(MongoTemplate.class);
@@ -52,6 +60,9 @@ class MongoDatabaseInitializerTest {
         verify(mongoTemplate, times(2)).executeCommand(new Document("ping", 1));
     }
 
+    /**
+     * 验证严格模式下初始化失败会抛出异常。
+     */
     @Test
     void shouldThrowWhenStrictModeAndInitializationFails() {
         MongoTemplate mongoTemplate = mock(MongoTemplate.class);

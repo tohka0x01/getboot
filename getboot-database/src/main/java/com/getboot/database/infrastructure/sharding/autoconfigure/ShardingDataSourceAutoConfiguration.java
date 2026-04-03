@@ -53,6 +53,9 @@ import java.util.Map;
 @EnableConfigurationProperties(DatabaseProperties.class)
 public class ShardingDataSourceAutoConfiguration {
 
+    /**
+     * 日志记录器。
+     */
     private static final Logger log = LoggerFactory.getLogger(ShardingDataSourceAutoConfiguration.class);
 
     /**
@@ -86,6 +89,15 @@ public class ShardingDataSourceAutoConfiguration {
         return YamlShardingSphereDataSourceFactory.createDataSource(yamlBytes);
     }
 
+    /**
+     * 加载并解析分片规则配置文件。
+     *
+     * @param resourceLoader 资源加载器
+     * @param environment 当前环境
+     * @param ruleConfigLocation 规则文件位置
+     * @return 解析后的配置内容
+     * @throws IOException 读取配置文件失败
+     */
     private byte[] loadRuleConfiguration(ResourceLoader resourceLoader,
                                          Environment environment,
                                          String ruleConfigLocation) throws IOException {
@@ -99,6 +111,13 @@ public class ShardingDataSourceAutoConfiguration {
         }
     }
 
+    /**
+     * 解析需要复用的底层数据源 Bean。
+     *
+     * @param applicationContext Spring 容器
+     * @param properties 分片配置
+     * @return 可复用的数据源映射
+     */
     private Map<String, DataSource> resolveReusableDataSources(ApplicationContext applicationContext,
                                                                DatabaseProperties.Sharding properties) {
         Map<String, DataSource> candidates = new LinkedHashMap<>(applicationContext.getBeansOfType(DataSource.class));

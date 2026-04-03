@@ -35,18 +35,34 @@ import java.sql.SQLException;
  */
 public class DataSourceInitializer {
 
+    /**
+     * 日志记录器。
+     */
     private static final Logger log = LoggerFactory.getLogger(DataSourceInitializer.class);
 
+    /**
+     * 数据源实例。
+     */
     private final DataSource dataSource;
+
+    /**
+     * 初始化配置。
+     */
     private final DatabaseProperties.Init properties;
 
+    /**
+     * 创建数据源初始化器。
+     *
+     * @param dataSource 数据源实例
+     * @param properties 初始化配置
+     */
     public DataSourceInitializer(DataSource dataSource, DatabaseProperties.Init properties) {
         this.dataSource = dataSource;
         this.properties = properties;
     }
 
     /**
-     * 在Bean初始化后立即执行（较早的时机）
+     * 在 Bean 初始化后立即执行数据源预热。
      */
     @PostConstruct
     @Order(1)
@@ -64,21 +80,20 @@ public class DataSourceInitializer {
                     log.info("Datasource initialized successfully. product={}, version={}, cost={}ms",
                             databaseProductName, databaseVersion, costTime);
                 }
-            } catch (SQLException e) {
+            } catch (SQLException exception) {
                 long costTime = System.currentTimeMillis() - startTime;
-                    log.error("Datasource initialization failed. cost={}ms", costTime, e);
+                log.error("Datasource initialization failed. cost={}ms", costTime, exception);
 
                 if (properties.isStrictMode()) {
-                    throw new RuntimeException("Datasource connection initialization failed during startup.", e);
-                } else {
-                    log.warn("Datasource initialization failed, but the application will continue in non-strict mode.");
+                    throw new RuntimeException("Datasource connection initialization failed during startup.", exception);
                 }
-            } catch (Exception e) {
+                log.warn("Datasource initialization failed, but the application will continue in non-strict mode.");
+            } catch (Exception exception) {
                 long costTime = System.currentTimeMillis() - startTime;
-                log.error("Unexpected datasource initialization error. cost={}ms", costTime, e);
+                log.error("Unexpected datasource initialization error. cost={}ms", costTime, exception);
 
                 if (properties.isStrictMode()) {
-                    throw new RuntimeException("Unexpected datasource initialization error during startup.", e);
+                    throw new RuntimeException("Unexpected datasource initialization error during startup.", exception);
                 }
             }
         } else {
@@ -86,6 +101,11 @@ public class DataSourceInitializer {
         }
     }
 
+    /**
+     * 在应用启动完成后执行一次轻量级连通性校验。
+     *
+     * @param event 应用启动完成事件
+     */
     @EventListener(ApplicationReadyEvent.class)
     @Order(2)
     public void validateAfterStartup(ApplicationReadyEvent event) {
@@ -98,8 +118,8 @@ public class DataSourceInitializer {
                     statement.execute("SELECT 1");
                     log.info("Datasource validation after startup succeeded.");
                 }
-            } catch (SQLException e) {
-                log.warn("Datasource validation after startup failed: {}", e.getMessage());
+            } catch (SQLException exception) {
+                log.warn("Datasource validation after startup failed: {}", exception.getMessage());
             }
         }
     }

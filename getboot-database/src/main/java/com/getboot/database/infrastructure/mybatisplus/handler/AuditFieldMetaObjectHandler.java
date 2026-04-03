@@ -28,12 +28,23 @@ import java.time.LocalDateTime;
  * @author qiheng
  */
 public class AuditFieldMetaObjectHandler implements MetaObjectHandler {
+
+    /**
+     * 在新增时填充创建时间与更新时间。
+     *
+     * @param metaObject 元对象
+     */
     @Override
     public void insertFill(MetaObject metaObject) {
         this.fillStrategy(metaObject, "createdAt", LocalDateTime.now());
         this.fillStrategy(metaObject, "updatedAt", LocalDateTime.now());
     }
 
+    /**
+     * 在更新时填充更新时间。
+     *
+     * @param metaObject 元对象
+     */
     @Override
     public void updateFill(MetaObject metaObject) {
         this.fillStrategy(metaObject, "updatedAt", LocalDateTime.now());

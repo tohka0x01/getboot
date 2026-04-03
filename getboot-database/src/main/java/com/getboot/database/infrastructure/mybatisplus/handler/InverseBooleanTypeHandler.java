@@ -29,29 +29,68 @@ import java.sql.*;
  */
 public class InverseBooleanTypeHandler extends BaseTypeHandler<Boolean> {
 
+    /**
+     * 将布尔值写入数据库。
+     *
+     * @param ps 预编译语句
+     * @param i 参数索引
+     * @param parameter 布尔参数
+     * @param jdbcType JDBC 类型
+     * @throws SQLException SQL 异常
+     */
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, Boolean parameter, JdbcType jdbcType) throws SQLException {
         ps.setInt(i, parameter ? 0 : 1);
     }
 
+    /**
+     * 按列名读取数据库值并转换为布尔值。
+     *
+     * @param rs 结果集
+     * @param columnName 列名
+     * @return 转换后的布尔值
+     * @throws SQLException SQL 异常
+     */
     @Override
     public Boolean getNullableResult(ResultSet rs, String columnName) throws SQLException {
         int val = rs.getInt(columnName);
         return handleConvert(val);
     }
 
+    /**
+     * 按列索引读取数据库值并转换为布尔值。
+     *
+     * @param rs 结果集
+     * @param columnIndex 列索引
+     * @return 转换后的布尔值
+     * @throws SQLException SQL 异常
+     */
     @Override
     public Boolean getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
         int val = rs.getInt(columnIndex);
         return handleConvert(val);
     }
 
+    /**
+     * 从存储过程结果中读取数据库值并转换为布尔值。
+     *
+     * @param cs 可调用语句
+     * @param columnIndex 列索引
+     * @return 转换后的布尔值
+     * @throws SQLException SQL 异常
+     */
     @Override
     public Boolean getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
         int val = cs.getInt(columnIndex);
         return handleConvert(val);
     }
 
+    /**
+     * 将数据库数值转换为反向布尔值。
+     *
+     * @param value 数据库存储值
+     * @return 转换后的布尔值
+     */
     private Boolean handleConvert(int value) {
         return value == 0;
     }

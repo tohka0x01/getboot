@@ -29,11 +29,22 @@ import java.util.Map;
  */
 public class DatabasePropertyAliasEnvironmentPostProcessor extends PropertyAliasEnvironmentPostProcessorSupport {
 
+    /**
+     * 返回数据库别名属性源名称。
+     *
+     * @return 属性源名称
+     */
     @Override
     protected String aliasedPropertySourceName() {
         return "getbootDatabaseAliasedProperties";
     }
 
+    /**
+     * 注册数据库增强前缀到下游组件原生前缀的映射。
+     *
+     * @param environment 当前环境
+     * @param aliasedProperties 别名属性容器
+     */
     @Override
     protected void contributeAliases(ConfigurableEnvironment environment, Map<String, Object> aliasedProperties) {
         aliasPrefix(
