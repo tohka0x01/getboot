@@ -43,7 +43,7 @@ public class DataSourceAutoConfiguration {
      * 注册标准数据源初始化器。
      *
      * @param dataSource 数据源实例
-     * @param properties 初始化配置
+     * @param databaseProperties 初始化配置
      * @return 数据源初始化器
      */
     @Bean
