@@ -288,4 +288,5 @@ mvn -q -Dmaven.repo.local=.m2 -pl <module> -am test
 - 模块地图：`docs/MODULE_MAP.md`
 - 包结构规则：`docs/DDD_PACKAGE_RULES.md`
 - 风格治理清单：`docs/MODULE_STYLE_CHECKLIST.md`
+- 测试治理清单：`docs/MODULE_TEST_CHECKLIST.md`
 - 路线图：`docs/TODO.md`
