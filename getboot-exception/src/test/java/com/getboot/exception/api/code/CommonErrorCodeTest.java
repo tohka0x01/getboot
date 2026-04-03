@@ -21,8 +21,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+/**
+ * {@link CommonErrorCode} 测试。
+ *
+ * @author qiheng
+ */
 class CommonErrorCodeTest {
 
+    /**
+     * 验证能够按错误码解析枚举项。
+     */
     @Test
     void shouldResolveEnumByCode() {
         assertSame(CommonErrorCode.SUCCESS, CommonErrorCode.fromCode(200));
@@ -30,6 +38,9 @@ class CommonErrorCodeTest {
         assertNull(CommonErrorCode.fromCode(999));
     }
 
+    /**
+     * 验证接口默认方法会拼接错误码字符串。
+     */
     @Test
     void shouldBuildCodeStringFromInterfaceDefaultMethod() {
         assertEquals("404:The requested resource was not found.", CommonErrorCode.NOT_FOUND.toCodeString());

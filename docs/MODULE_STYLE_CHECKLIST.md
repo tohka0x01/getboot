@@ -35,7 +35,7 @@
 ### Foundation
 
 - [x] `getboot-support`
-- [ ] `getboot-exception`
+- [x] `getboot-exception`
 - [x] `getboot-web`
 
 ### Infrastructure Capability

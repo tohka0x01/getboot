@@ -27,6 +27,10 @@ import java.io.Serializable;
  * @author qiheng
  */
 public class BusinessException extends RuntimeException implements Serializable {
+
+    /**
+     * 序列化版本号。
+     */
     @Serial
     private static final long serialVersionUID = 1L;
 
@@ -117,10 +121,20 @@ public class BusinessException extends RuntimeException implements Serializable 
         return errorCode != null ? errorCode.code() : null;
     }
 
+    /**
+     * 获取错误码对象。
+     *
+     * @return 错误码对象
+     */
     public ErrorCode getErrorCode() {
         return errorCode;
     }
 
+    /**
+     * 设置错误码对象。
+     *
+     * @param errorCode 错误码对象
+     */
     public void setErrorCode(ErrorCode errorCode) {
         this.errorCode = errorCode;
     }

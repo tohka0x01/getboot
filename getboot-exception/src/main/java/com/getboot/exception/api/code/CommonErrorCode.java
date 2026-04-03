@@ -125,19 +125,43 @@ public enum CommonErrorCode implements ErrorCode {
      * 令牌已过期
      */
     TOKEN_EXPIRED(401, "Login session expired. Please sign in again.");
+
+    /**
+     * 错误码数值。
+     */
     private final Integer code;
+
+    /**
+     * 默认错误消息。
+     */
     private final String message;
 
+    /**
+     * 创建通用错误码枚举项。
+     *
+     * @param code 错误码数值
+     * @param message 默认错误消息
+     */
     CommonErrorCode(Integer code, String message) {
         this.code = code;
         this.message = message;
     }
 
+    /**
+     * 返回错误码数值。
+     *
+     * @return 错误码数值
+     */
     @Override
     public Integer code() {
         return this.code;
     }
 
+    /**
+     * 返回默认错误消息。
+     *
+     * @return 默认错误消息
+     */
     @Override
     public String message() {
         return this.message;

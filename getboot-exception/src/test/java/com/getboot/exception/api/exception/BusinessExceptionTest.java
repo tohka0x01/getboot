@@ -22,8 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+/**
+ * {@link BusinessException} 测试。
+ *
+ * @author qiheng
+ */
 class BusinessExceptionTest {
 
+    /**
+     * 验证通过错误码与消息创建异常时会保留完整上下文。
+     */
     @Test
     void shouldCreateExceptionFromCodeAndMessage() {
         BusinessException exception = BusinessException.of(422, "invalid request");
@@ -33,6 +41,9 @@ class BusinessExceptionTest {
         assertEquals("422:invalid request - invalid request", exception.getFullMessage());
     }
 
+    /**
+     * 验证直接传入错误码对象时会保留原始实例。
+     */
     @Test
     void shouldKeepProvidedErrorCodeInstance() {
         BusinessException exception = BusinessException.of(CommonErrorCode.NOT_FOUND);
@@ -42,6 +53,9 @@ class BusinessExceptionTest {
         assertEquals("The requested resource was not found.", exception.getMessage());
     }
 
+    /**
+     * 验证仅传入普通消息时错误码对象为空。
+     */
     @Test
     void shouldReturnNullErrorCodeWhenCreatedWithPlainMessage() {
         BusinessException exception = new BusinessException("custom error");
