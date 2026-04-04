@@ -63,4 +63,44 @@ class BusinessExceptionTest {
         assertNull(exception.getErrorCodeValue());
         assertEquals("custom error", exception.getFullMessage());
     }
+
+    /**
+     * 验证通过错误码、消息和原因创建异常时会保留原因异常。
+     */
+    @Test
+    void shouldKeepCauseWhenCreatedFromCodeMessageAndCause() {
+        IllegalStateException cause = new IllegalStateException("root cause");
+
+        BusinessException exception = new BusinessException(500, "system error", cause);
+
+        assertEquals(500, exception.getErrorCodeValue());
+        assertEquals("system error", exception.getMessage());
+        assertSame(cause, exception.getCause());
+    }
+
+    /**
+     * 验证自定义消息加错误码构造器会保留错误码并覆盖异常消息。
+     */
+    @Test
+    void shouldOverrideMessageWhenCreatedWithCustomMessageAndErrorCode() {
+        BusinessException exception = new BusinessException("custom token expired", CommonErrorCode.TOKEN_EXPIRED);
+
+        assertSame(CommonErrorCode.TOKEN_EXPIRED, exception.getErrorCode());
+        assertEquals("custom token expired", exception.getMessage());
+        assertEquals("401:Login session expired. Please sign in again. - custom token expired", exception.getFullMessage());
+    }
+
+    /**
+     * 验证普通消息与原因构造器不会附带错误码，但会保留原因异常。
+     */
+    @Test
+    void shouldKeepPlainMessageAndCauseWithoutErrorCode() {
+        IllegalArgumentException cause = new IllegalArgumentException("bad request");
+
+        BusinessException exception = new BusinessException("custom error", cause);
+
+        assertNull(exception.getErrorCode());
+        assertEquals("custom error", exception.getMessage());
+        assertSame(cause, exception.getCause());
+    }
 }

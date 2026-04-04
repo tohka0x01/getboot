@@ -45,4 +45,14 @@ class CommonErrorCodeTest {
     void shouldBuildCodeStringFromInterfaceDefaultMethod() {
         assertEquals("404:The requested resource was not found.", CommonErrorCode.NOT_FOUND.toCodeString());
     }
+
+    /**
+     * 验证空错误码与边界错误码都能得到稳定结果。
+     */
+    @Test
+    void shouldHandleNullAndBoundaryCodes() {
+        assertNull(CommonErrorCode.fromCode(null));
+        assertSame(CommonErrorCode.UNAUTHORIZED, CommonErrorCode.fromCode(401));
+        assertSame(CommonErrorCode.ERROR, CommonErrorCode.fromCode(500));
+    }
 }
