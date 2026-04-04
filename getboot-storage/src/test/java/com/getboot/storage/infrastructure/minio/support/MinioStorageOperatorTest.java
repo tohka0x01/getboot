@@ -41,9 +41,9 @@ import io.minio.StatObjectResponse;
 import io.minio.http.Method;
 import okhttp3.Headers;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -54,12 +54,9 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 /**
  * MinIO 对象存储门面测试。
@@ -75,7 +72,7 @@ class MinioStorageOperatorTest {
      */
     @Test
     void shouldUploadObjectAndCreateBucketWhenMissing() throws Exception {
-        MinioClient minioClient = mock(MinioClient.class);
+        RecordingMinioClient minioClient = new RecordingMinioClient();
         StorageProperties properties = storageProperties();
         MinioStorageOperator operator = newOperator(
                 minioClient,
@@ -83,16 +80,14 @@ class MinioStorageOperatorTest {
                 (scene, requestedObjectKey, originalFilename) -> "invoice/2026/04/02/file.pdf",
                 List.of((request, metadata) -> metadata.put("traceid", "trace-001"))
         );
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
-        when(minioClient.putObject(any(PutObjectArgs.class))).thenReturn(
-                new ObjectWriteResponse(
-                        emptyHeaders(),
-                        "invoice-bucket",
-                        "us-east-1",
-                        "invoice/2026/04/02/file.pdf",
-                        "etag-001",
-                        "version-001"
-                )
+        minioClient.bucketExistsResult = false;
+        minioClient.putObjectResponse = new ObjectWriteResponse(
+                emptyHeaders(),
+                "invoice-bucket",
+                "us-east-1",
+                "invoice/2026/04/02/file.pdf",
+                "etag-001",
+                "version-001"
         );
 
         StorageUploadRequest request = new StorageUploadRequest();
@@ -105,19 +100,15 @@ class MinioStorageOperatorTest {
 
         StorageObjectMetadata metadata = operator.upload(request);
 
-        ArgumentCaptor<BucketExistsArgs> bucketExistsArgs = ArgumentCaptor.forClass(BucketExistsArgs.class);
-        ArgumentCaptor<MakeBucketArgs> makeBucketArgs = ArgumentCaptor.forClass(MakeBucketArgs.class);
-        ArgumentCaptor<PutObjectArgs> putObjectArgs = ArgumentCaptor.forClass(PutObjectArgs.class);
-        verify(minioClient).bucketExists(bucketExistsArgs.capture());
-        verify(minioClient).makeBucket(makeBucketArgs.capture());
-        verify(minioClient).putObject(putObjectArgs.capture());
-
-        assertEquals("invoice-bucket", bucketExistsArgs.getValue().bucket());
-        assertEquals("invoice-bucket", makeBucketArgs.getValue().bucket());
-        assertEquals("us-east-1", makeBucketArgs.getValue().region());
-        assertEquals("invoice-bucket", putObjectArgs.getValue().bucket());
-        assertEquals("invoice/2026/04/02/file.pdf", putObjectArgs.getValue().object());
-        assertEquals("application/pdf", putObjectArgs.getValue().contentType());
+        assertNotNull(minioClient.bucketExistsArgs);
+        assertNotNull(minioClient.makeBucketArgs);
+        assertNotNull(minioClient.putObjectArgs);
+        assertEquals("invoice-bucket", minioClient.bucketExistsArgs.bucket());
+        assertEquals("invoice-bucket", minioClient.makeBucketArgs.bucket());
+        assertEquals("us-east-1", minioClient.makeBucketArgs.region());
+        assertEquals("invoice-bucket", minioClient.putObjectArgs.bucket());
+        assertEquals("invoice/2026/04/02/file.pdf", minioClient.putObjectArgs.object());
+        assertEquals("application/pdf", minioClient.putObjectArgs.contentType());
 
         assertEquals("invoice-bucket", metadata.getBucket());
         assertEquals("invoice/2026/04/02/file.pdf", metadata.getObjectKey());
@@ -135,7 +126,7 @@ class MinioStorageOperatorTest {
      */
     @Test
     void shouldMapDownloadMetadataAndPayload() throws Exception {
-        MinioClient minioClient = mock(MinioClient.class);
+        RecordingMinioClient minioClient = new RecordingMinioClient();
         StorageProperties properties = storageProperties();
         MinioStorageOperator operator = newOperator(
                 minioClient,
@@ -143,25 +134,21 @@ class MinioStorageOperatorTest {
                 (scene, requestedObjectKey, originalFilename) -> requestedObjectKey,
                 List.of()
         );
-        when(minioClient.statObject(any(StatObjectArgs.class))).thenReturn(
-                statObjectResponse(
-                        "invoice-bucket",
-                        "invoice/ready.pdf",
-                        7L,
-                        "application/pdf",
-                        "etag-002",
-                        "version-002",
-                        Map.of("tenant", "acme")
-                )
+        minioClient.statObjectResponse = statObjectResponse(
+                "invoice-bucket",
+                "invoice/ready.pdf",
+                7L,
+                "application/pdf",
+                "etag-002",
+                "version-002",
+                Map.of("tenant", "acme")
         );
-        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(
-                new GetObjectResponse(
-                        emptyHeaders(),
-                        "invoice-bucket",
-                        "us-east-1",
-                        "invoice/ready.pdf",
-                        new ByteArrayInputStream("payload".getBytes(StandardCharsets.UTF_8))
-                )
+        minioClient.getObjectResponse = new GetObjectResponse(
+                emptyHeaders(),
+                "invoice-bucket",
+                "us-east-1",
+                "invoice/ready.pdf",
+                new ByteArrayInputStream("payload".getBytes(StandardCharsets.UTF_8))
         );
 
         StorageObjectRequest request = new StorageObjectRequest();
@@ -179,14 +166,12 @@ class MinioStorageOperatorTest {
             assertArrayEquals("payload".getBytes(StandardCharsets.UTF_8), response.getInputStream().readAllBytes());
         }
 
-        ArgumentCaptor<StatObjectArgs> statObjectArgs = ArgumentCaptor.forClass(StatObjectArgs.class);
-        ArgumentCaptor<GetObjectArgs> getObjectArgs = ArgumentCaptor.forClass(GetObjectArgs.class);
-        verify(minioClient).statObject(statObjectArgs.capture());
-        verify(minioClient).getObject(getObjectArgs.capture());
-        assertEquals("invoice-bucket", statObjectArgs.getValue().bucket());
-        assertEquals("invoice/ready.pdf", statObjectArgs.getValue().object());
-        assertEquals("invoice-bucket", getObjectArgs.getValue().bucket());
-        assertEquals("invoice/ready.pdf", getObjectArgs.getValue().object());
+        assertNotNull(minioClient.statObjectArgs);
+        assertNotNull(minioClient.getObjectArgs);
+        assertEquals("invoice-bucket", minioClient.statObjectArgs.bucket());
+        assertEquals("invoice/ready.pdf", minioClient.statObjectArgs.object());
+        assertEquals("invoice-bucket", minioClient.getObjectArgs.bucket());
+        assertEquals("invoice/ready.pdf", minioClient.getObjectArgs.object());
     }
 
     /**
@@ -196,7 +181,7 @@ class MinioStorageOperatorTest {
      */
     @Test
     void shouldRemoveObjectFromResolvedBucket() throws Exception {
-        MinioClient minioClient = mock(MinioClient.class);
+        RecordingMinioClient minioClient = new RecordingMinioClient();
         MinioStorageOperator operator = newOperator(
                 minioClient,
                 storageProperties(),
@@ -209,10 +194,9 @@ class MinioStorageOperatorTest {
         request.setObjectKey("invoice/obsolete.pdf");
         operator.delete(request);
 
-        ArgumentCaptor<RemoveObjectArgs> removeObjectArgs = ArgumentCaptor.forClass(RemoveObjectArgs.class);
-        verify(minioClient).removeObject(removeObjectArgs.capture());
-        assertEquals("invoice-bucket", removeObjectArgs.getValue().bucket());
-        assertEquals("invoice/obsolete.pdf", removeObjectArgs.getValue().object());
+        assertNotNull(minioClient.removeObjectArgs);
+        assertEquals("invoice-bucket", minioClient.removeObjectArgs.bucket());
+        assertEquals("invoice/obsolete.pdf", minioClient.removeObjectArgs.object());
     }
 
     /**
@@ -222,7 +206,7 @@ class MinioStorageOperatorTest {
      */
     @Test
     void shouldGenerateUploadPresignedUrlWithPublicEndpoint() throws Exception {
-        MinioClient minioClient = mock(MinioClient.class);
+        RecordingMinioClient minioClient = new RecordingMinioClient();
         StorageProperties properties = storageProperties();
         MinioStorageOperator operator = newOperator(
                 minioClient,
@@ -230,10 +214,9 @@ class MinioStorageOperatorTest {
                 (scene, requestedObjectKey, originalFilename) -> "invoice/2026/04/02/upload.png",
                 List.of()
         );
-        when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
-        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class))).thenReturn(
-                "http://minio-internal:9000/invoice-bucket/invoice/2026/04/02/upload.png?X-Amz-Signature=abc"
-        );
+        minioClient.bucketExistsResult = true;
+        minioClient.presignedObjectUrl =
+                "http://minio-internal:9000/invoice-bucket/invoice/2026/04/02/upload.png?X-Amz-Signature=abc";
 
         StoragePresignRequest request = new StoragePresignRequest();
         request.setMethod(StoragePresignMethod.UPLOAD);
@@ -243,13 +226,12 @@ class MinioStorageOperatorTest {
 
         StoragePresignResponse response = operator.generatePresignedUrl(request);
 
-        ArgumentCaptor<GetPresignedObjectUrlArgs> presignArgs = ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
-        verify(minioClient).bucketExists(any(BucketExistsArgs.class));
-        verify(minioClient).getPresignedObjectUrl(presignArgs.capture());
-        assertEquals("invoice-bucket", presignArgs.getValue().bucket());
-        assertEquals("invoice/2026/04/02/upload.png", presignArgs.getValue().object());
-        assertEquals(Method.PUT, presignArgs.getValue().method());
-        assertEquals(300, presignArgs.getValue().expiry());
+        assertNotNull(minioClient.bucketExistsArgs);
+        assertNotNull(minioClient.presignedObjectUrlArgs);
+        assertEquals("invoice-bucket", minioClient.presignedObjectUrlArgs.bucket());
+        assertEquals("invoice/2026/04/02/upload.png", minioClient.presignedObjectUrlArgs.object());
+        assertEquals(Method.PUT, minioClient.presignedObjectUrlArgs.method());
+        assertEquals(300, minioClient.presignedObjectUrlArgs.expiry());
 
         assertEquals("invoice-bucket", response.getBucket());
         assertEquals("invoice/2026/04/02/upload.png", response.getObjectKey());
@@ -268,16 +250,15 @@ class MinioStorageOperatorTest {
      */
     @Test
     void shouldGenerateDownloadPresignedUrlWithDefaultTtl() throws Exception {
-        MinioClient minioClient = mock(MinioClient.class);
+        RecordingMinioClient minioClient = new RecordingMinioClient();
         MinioStorageOperator operator = newOperator(
                 minioClient,
                 storageProperties(),
                 (scene, requestedObjectKey, originalFilename) -> requestedObjectKey,
                 List.of()
         );
-        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class))).thenReturn(
-                "http://minio-internal:9000/invoice-bucket/invoice/ready.pdf?X-Amz-Signature=download"
-        );
+        minioClient.presignedObjectUrl =
+                "http://minio-internal:9000/invoice-bucket/invoice/ready.pdf?X-Amz-Signature=download";
 
         StoragePresignRequest request = new StoragePresignRequest();
         request.setMethod(StoragePresignMethod.DOWNLOAD);
@@ -286,13 +267,12 @@ class MinioStorageOperatorTest {
 
         StoragePresignResponse response = operator.generatePresignedUrl(request);
 
-        ArgumentCaptor<GetPresignedObjectUrlArgs> presignArgs = ArgumentCaptor.forClass(GetPresignedObjectUrlArgs.class);
-        verify(minioClient).getPresignedObjectUrl(presignArgs.capture());
-        verifyNoMoreInteractions(minioClient);
-        assertEquals("invoice-bucket", presignArgs.getValue().bucket());
-        assertEquals("invoice/ready.pdf", presignArgs.getValue().object());
-        assertEquals(Method.GET, presignArgs.getValue().method());
-        assertEquals(900, presignArgs.getValue().expiry());
+        assertNotNull(minioClient.presignedObjectUrlArgs);
+        assertEquals("invoice-bucket", minioClient.presignedObjectUrlArgs.bucket());
+        assertEquals("invoice/ready.pdf", minioClient.presignedObjectUrlArgs.object());
+        assertEquals(Method.GET, minioClient.presignedObjectUrlArgs.method());
+        assertEquals(900, minioClient.presignedObjectUrlArgs.expiry());
+        assertNull(minioClient.bucketExistsArgs);
 
         assertEquals(StoragePresignMethod.DOWNLOAD, response.getMethod());
         assertEquals(Duration.ofMinutes(15), response.getTtl());
@@ -372,5 +352,170 @@ class MinioStorageOperatorTest {
                 .add("x-amz-version-id", versionId);
         metadata.forEach((key, value) -> builder.add("x-amz-meta-" + key, value));
         return new StatObjectResponse(builder.build(), bucket, "us-east-1", objectKey);
+    }
+
+    /**
+     * 记录参数的测试用 MinIO 客户端。
+     */
+    private static final class RecordingMinioClient extends MinioClient {
+
+        /**
+         * bucket 是否存在。
+         */
+        private boolean bucketExistsResult = true;
+
+        /**
+         * 记录的 bucketExists 参数。
+         */
+        private BucketExistsArgs bucketExistsArgs;
+
+        /**
+         * 记录的 makeBucket 参数。
+         */
+        private MakeBucketArgs makeBucketArgs;
+
+        /**
+         * 记录的 putObject 参数。
+         */
+        private PutObjectArgs putObjectArgs;
+
+        /**
+         * 记录的 statObject 参数。
+         */
+        private StatObjectArgs statObjectArgs;
+
+        /**
+         * 记录的 getObject 参数。
+         */
+        private GetObjectArgs getObjectArgs;
+
+        /**
+         * 记录的 removeObject 参数。
+         */
+        private RemoveObjectArgs removeObjectArgs;
+
+        /**
+         * 记录的预签名参数。
+         */
+        private GetPresignedObjectUrlArgs presignedObjectUrlArgs;
+
+        /**
+         * 预设上传响应。
+         */
+        private ObjectWriteResponse putObjectResponse;
+
+        /**
+         * 预设查询响应。
+         */
+        private StatObjectResponse statObjectResponse;
+
+        /**
+         * 预设下载响应。
+         */
+        private GetObjectResponse getObjectResponse;
+
+        /**
+         * 预设预签名地址。
+         */
+        private String presignedObjectUrl;
+
+        /**
+         * 创建测试客户端。
+         */
+        private RecordingMinioClient() {
+            super(MinioClient.builder()
+                    .endpoint("http://127.0.0.1:9000")
+                    .credentials("minioadmin", "minioadmin")
+                    .build());
+        }
+
+        /**
+         * 记录 bucket 存在性检查参数。
+         *
+         * @param args bucket 检查参数
+         * @return 预设存在性结果
+         */
+        @Override
+        public boolean bucketExists(BucketExistsArgs args) {
+            this.bucketExistsArgs = args;
+            return bucketExistsResult;
+        }
+
+        /**
+         * 记录创建 bucket 参数。
+         *
+         * @param args 创建参数
+         */
+        @Override
+        public void makeBucket(MakeBucketArgs args) {
+            this.makeBucketArgs = args;
+        }
+
+        /**
+         * 记录上传参数并返回预设响应。
+         *
+         * @param args 上传参数
+         * @return 预设上传响应
+         */
+        @Override
+        public ObjectWriteResponse putObject(PutObjectArgs args) {
+            this.putObjectArgs = args;
+            return putObjectResponse;
+        }
+
+        /**
+         * 记录查询参数并返回预设响应。
+         *
+         * @param args 查询参数
+         * @return 预设查询响应
+         */
+        @Override
+        public StatObjectResponse statObject(StatObjectArgs args) {
+            this.statObjectArgs = args;
+            return statObjectResponse;
+        }
+
+        /**
+         * 记录下载参数并返回预设响应。
+         *
+         * @param args 下载参数
+         * @return 预设下载响应
+         */
+        @Override
+        public GetObjectResponse getObject(GetObjectArgs args) {
+            this.getObjectArgs = args;
+            return getObjectResponse;
+        }
+
+        /**
+         * 记录删除参数。
+         *
+         * @param args 删除参数
+         */
+        @Override
+        public void removeObject(RemoveObjectArgs args) {
+            this.removeObjectArgs = args;
+        }
+
+        /**
+         * 记录预签名参数并返回预设地址。
+         *
+         * @param args 预签名参数
+         * @return 预设预签名地址
+         */
+        @Override
+        public String getPresignedObjectUrl(GetPresignedObjectUrlArgs args) {
+            this.presignedObjectUrlArgs = args;
+            return presignedObjectUrl;
+        }
+
+        /**
+         * 测试中不需要真正关闭资源。
+         *
+         * @throws IOException 不会抛出
+         */
+        @Override
+        public void close() throws IOException {
+        }
     }
 }

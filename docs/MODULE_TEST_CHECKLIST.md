@@ -52,7 +52,7 @@
 ### P2：已有一定测试，但仍需本轮逐个确认
 
 - [x] `getboot-support`：当前 `5` 个测试；已补齐 support 自动配置回退、Micrometer 上下文注册与 Trace 传播工具边界，`2026-04-04` 已执行模块级 Maven `test`
-- [ ] `getboot-storage`：当前 `3` 个测试；确认上传、预签名、自动配置边界是否完整
+- [x] `getboot-storage`：当前 `5` 个测试；已补齐 core 自动配置、bucket 路由与 MinIO 开关边界，并将 MinIO operator 测试改为 JDK 25 兼容实现，`2026-04-04` 已执行模块级 Maven `test`
 - [ ] `getboot-sms`：当前 `3` 个测试；确认模板变量、供应商适配、自动配置是否完整
 - [ ] `getboot-search`：当前 `4` 个测试；确认查询条件、分页排序和自动配置边界是否完整
 - [ ] `getboot-ai`：当前 `5` 个测试；确认 properties、模板渲染、OpenAI 适配和门面是否完整
