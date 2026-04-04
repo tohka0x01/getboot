@@ -15,7 +15,6 @@
 
     <properties>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-        <tomcat.websocket.version>10.1.18</tomcat.websocket.version>
     </properties>
 
     <dependencies>

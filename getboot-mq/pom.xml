@@ -11,11 +11,10 @@
     </parent>
 
     <artifactId>getboot-mq</artifactId>
-    <description>MQ starter with RocketMQ and Kafka integration</description>
+    <description>MQ starter with RocketMQ, Kafka and MQTT integration</description>
 
     <properties>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-        <netty.mqtt.version>4.1.115.Final</netty.mqtt.version>
     </properties>
 
     <dependencies>

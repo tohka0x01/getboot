@@ -29,7 +29,7 @@
 ## 前置条件
 
 - 当前实现基于 `jakarta.websocket`
-- 当前默认落在 Servlet + 嵌入式 Tomcat 场景
+- 当前默认落在 Servlet 容器场景
 - 如果业务项目需要 STOMP 协议编排或消息代理，不属于这个模块第一阶段边界
 
 ## 目录约定
@@ -74,7 +74,7 @@ getboot:
 ## 已实现技术栈
 
 - `jakarta.websocket`
-- Embedded Tomcat WebSocket Container
+- Servlet WebSocket Container
 
 ## 边界 / 补充说明
 

@@ -33,7 +33,7 @@ MQ 消息能力 starter，当前支持 `rocketmq`、`kafka` 与 `mqtt` 三类实
 | --- | --- | --- | --- |
 | `rocketmq` | `infrastructure.rocketmq.*` | Spring 容器中存在 RocketMQ 基础设施 | 支持事务消息、延迟级别、按 topic 路由事务回查 |
 | `kafka` | `infrastructure.kafka.*` | Spring 容器中存在 Spring Kafka 基础设施 | 支持通用发送、异步发送、按 key 有序发送、监听侧 Trace 恢复 |
-| `mqtt` | `infrastructure.mqtt.*` | 可直连 MQTT Broker | 首版支持统一发布入口、QoS/retained 配置与按主题发送 |
+| `mqtt` | `infrastructure.mqtt.*` | 可直连 MQTT Broker | 当前基于 Spring Integration MQTT + Paho 承接统一发布入口、QoS/retained 配置与按主题发送 |
 
 ## 前置条件
 
@@ -125,6 +125,10 @@ getboot:
   `type=kafka` 时注册 `KafkaMqMessageProducer`
 - `MqMessageProducer`
   `type=mqtt` 时注册 `MqttMqMessageProducer`
+- `MqttPahoClientFactory`
+  仅在 `type=mqtt` 时注册默认 Paho 客户端工厂
+- `MessageHandler`
+  仅在 `type=mqtt` 时注册名称为 `mqttOutboundMessageHandler` 的 `MqttPahoMessageHandler`
 - `RocketMQMessageConverter`
   仅在 `type=rocketmq` 时注册增强版 Jackson 消息转换器
 - `TopicRoutingTransactionListener`

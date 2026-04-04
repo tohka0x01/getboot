@@ -22,15 +22,17 @@ import com.getboot.mq.api.model.MqTransactionReceipt;
 import com.getboot.mq.api.producer.MqMessageProducer;
 import com.getboot.mq.api.properties.MqProperties;
 import com.getboot.mq.api.properties.MqTraceProperties;
-import com.getboot.mq.infrastructure.mqtt.support.NettyMqttPublishingGateway;
 import com.getboot.mq.spi.MqMessageHeadersCustomizer;
 import com.getboot.mq.support.MqDestination;
 import com.getboot.mq.support.MqTraceContextSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.integration.mqtt.support.MqttHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,9 +73,9 @@ public class MqttMqMessageProducer implements MqMessageProducer {
     private static final Logger log = LoggerFactory.getLogger(MqttMqMessageProducer.class);
 
     /**
-     * MQTT 发布网关。
+     * MQTT 出站消息处理器。
      */
-    private final NettyMqttPublishingGateway publishingGateway;
+    private final MessageHandler mqttOutboundMessageHandler;
 
     /**
      * MQTT 能力配置。
@@ -93,17 +95,17 @@ public class MqttMqMessageProducer implements MqMessageProducer {
     /**
      * 创建 MQTT 消息生产者。
      *
-     * @param publishingGateway MQTT 发布网关
+     * @param mqttOutboundMessageHandler MQTT 出站消息处理器
      * @param mqttProperties MQTT 能力配置
      * @param traceProperties MQ Trace 配置
      * @param messageHeadersCustomizers 消息头定制器集合
      */
     public MqttMqMessageProducer(
-            NettyMqttPublishingGateway publishingGateway,
+            MessageHandler mqttOutboundMessageHandler,
             MqProperties.Mqtt mqttProperties,
             MqTraceProperties traceProperties,
             List<MqMessageHeadersCustomizer> messageHeadersCustomizers) {
-        this.publishingGateway = publishingGateway;
+        this.mqttOutboundMessageHandler = mqttOutboundMessageHandler;
         this.mqttProperties = mqttProperties == null ? new MqProperties.Mqtt() : mqttProperties;
         this.traceContextSupport = new MqTraceContextSupport(traceProperties);
         this.messageHeadersCustomizers = messageHeadersCustomizers == null ? List.of() : List.copyOf(messageHeadersCustomizers);
@@ -134,14 +136,8 @@ public class MqttMqMessageProducer implements MqMessageProducer {
     @Override
     public <T extends MqMessage> MqSendReceipt send(String destination, T message) {
         MqDestination mqDestination = MqDestination.parse(destination);
-        Map<String, Object> headers = buildHeaders(mqDestination, message);
         try {
-            publishingGateway.publish(
-                    resolveTopic(headers, mqDestination),
-                    JSON.toJSONString(message).getBytes(StandardCharsets.UTF_8),
-                    resolveQos(headers),
-                    resolveRetained(headers)
-            );
+            mqttOutboundMessageHandler.handleMessage(buildMessage(mqDestination, message));
             log.info("[{}] MQTT message sent successfully. messageId={}", destination, message.getMessageId());
             return new MqSendReceipt(destination, message.getMessageId());
         } catch (Exception ex) {
@@ -313,6 +309,24 @@ public class MqttMqMessageProducer implements MqMessageProducer {
     }
 
     /**
+     * 构建交给 Spring Integration MQTT 处理器的消息对象。
+     *
+     * @param destination 逻辑目标地址
+     * @param message 消息体
+     * @return Spring 消息
+     * @param <T> 消息类型
+     */
+    private <T extends MqMessage> Message<String> buildMessage(MqDestination destination, T message) {
+        Map<String, Object> headers = buildHeaders(destination, message);
+        return MessageBuilder.withPayload(JSON.toJSONString(message))
+                .copyHeaders(headers)
+                .setHeader(MqttHeaders.TOPIC, resolveTopic(headers, destination))
+                .setHeader(MqttHeaders.QOS, resolveQos(headers))
+                .setHeader(MqttHeaders.RETAINED, resolveRetained(headers))
+                .build();
+    }
+
+    /**
      * 解析最终发送主题。
      *
      * @param headers 头信息
@@ -320,7 +334,7 @@ public class MqttMqMessageProducer implements MqMessageProducer {
      * @return 发送主题
      */
     private String resolveTopic(Map<String, Object> headers, MqDestination destination) {
-        Object topic = headers.get(TOPIC_HEADER);
+        Object topic = resolveHeader(headers, MqttHeaders.TOPIC, TOPIC_HEADER);
         if (topic instanceof String text && StringUtils.hasText(text)) {
             return text.trim();
         }
@@ -334,7 +348,7 @@ public class MqttMqMessageProducer implements MqMessageProducer {
      * @return QoS 级别
      */
     private int resolveQos(Map<String, Object> headers) {
-        Object qos = headers.get(QOS_HEADER);
+        Object qos = resolveHeader(headers, MqttHeaders.QOS, QOS_HEADER);
         if (qos instanceof Number number) {
             return number.intValue();
         }
@@ -351,7 +365,7 @@ public class MqttMqMessageProducer implements MqMessageProducer {
      * @return retained 标识
      */
     private boolean resolveRetained(Map<String, Object> headers) {
-        Object retained = headers.get(RETAINED_HEADER);
+        Object retained = resolveHeader(headers, MqttHeaders.RETAINED, RETAINED_HEADER);
         if (retained instanceof Boolean flag) {
             return flag;
         }
@@ -359,6 +373,21 @@ public class MqttMqMessageProducer implements MqMessageProducer {
             return Boolean.parseBoolean(text.trim());
         }
         return mqttProperties.isRetained();
+    }
+
+    /**
+     * 优先读取 Spring Integration MQTT 头，其次兼容历史自定义头。
+     *
+     * @param headers 当前消息头
+     * @param preferredHeader Spring Integration 头名称
+     * @param compatibilityHeader 兼容旧实现的头名称
+     * @return 匹配到的头值
+     */
+    private Object resolveHeader(Map<String, Object> headers, String preferredHeader, String compatibilityHeader) {
+        if (headers.containsKey(preferredHeader)) {
+            return headers.get(preferredHeader);
+        }
+        return headers.get(compatibilityHeader);
     }
 
     /**

@@ -17,11 +17,17 @@ package com.getboot.mq.infrastructure.mqtt.autoconfigure;
 
 import com.getboot.mq.api.producer.MqMessageProducer;
 import com.getboot.mq.infrastructure.mqtt.producer.MqttMqMessageProducer;
-import com.getboot.mq.infrastructure.mqtt.support.NettyMqttPublishingGateway;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
+import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
+import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
+import org.springframework.messaging.MessageHandler;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,8 +58,15 @@ class MqttMqEnhancementAutoConfigurationTest {
     @Test
     void shouldRegisterDefaultMqttBeans() {
         contextRunner.run(context -> {
-            assertTrue(context.containsBean("nettyMqttPublishingGateway"));
-            assertInstanceOf(NettyMqttPublishingGateway.class, context.getBean(NettyMqttPublishingGateway.class));
+            assertTrue(context.containsBean("mqttPahoClientFactory"));
+            MqttPahoClientFactory clientFactory = context.getBean(MqttPahoClientFactory.class);
+            assertInstanceOf(DefaultMqttPahoClientFactory.class, clientFactory);
+            MqttConnectOptions connectOptions = clientFactory.getConnectionOptions();
+            assertArrayEquals(new String[]{"tcp://127.0.0.1:1883"}, connectOptions.getServerURIs());
+            assertEquals(5, connectOptions.getConnectionTimeout());
+            assertEquals(60, connectOptions.getKeepAliveInterval());
+            assertTrue(context.containsBean("mqttOutboundMessageHandler"));
+            assertInstanceOf(MqttPahoMessageHandler.class, context.getBean(MessageHandler.class));
             assertInstanceOf(MqttMqMessageProducer.class, context.getBean(MqMessageProducer.class));
         });
     }
@@ -71,7 +84,8 @@ class MqttMqEnhancementAutoConfigurationTest {
                         "getboot.mq.mqtt.enabled=true"
                 )
                 .run(context -> {
-                    assertFalse(context.containsBean("nettyMqttPublishingGateway"));
+                    assertFalse(context.containsBean("mqttPahoClientFactory"));
+                    assertFalse(context.containsBean("mqttOutboundMessageHandler"));
                     assertFalse(context.containsBean("mqMessageProducer"));
                 });
     }

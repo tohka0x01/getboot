@@ -21,10 +21,12 @@ import com.getboot.mq.api.message.MqMessage;
 import com.getboot.mq.api.model.MqSendReceipt;
 import com.getboot.mq.api.properties.MqProperties;
 import com.getboot.mq.api.properties.MqTraceProperties;
-import com.getboot.mq.infrastructure.mqtt.support.NettyMqttPublishingGateway;
 import com.getboot.support.api.trace.TraceContextHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.integration.mqtt.support.MqttHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
 
 import java.util.List;
 
@@ -48,17 +50,17 @@ class MqttMqMessageProducerTest {
     }
 
     /**
-     * 验证 MQTT 生产者会将主题、QoS、retained 和消息体交给发布网关。
+     * 验证 MQTT 生产者会将主题、QoS、retained 和消息体交给消息处理器。
      */
     @Test
     void shouldSendMqttMessageWithTraceAndCustomHeaders() {
-        CapturingPublishingGateway publishingGateway = new CapturingPublishingGateway();
+        CapturingMessageHandler messageHandler = new CapturingMessageHandler();
         MqProperties.Mqtt mqttProperties = new MqProperties.Mqtt();
         mqttProperties.setDefaultQos(1);
         mqttProperties.setRetained(false);
 
         MqttMqMessageProducer producer = new MqttMqMessageProducer(
-                publishingGateway,
+                messageHandler,
                 mqttProperties,
                 new MqTraceProperties(),
                 List.of((headers, message, destination) -> {
@@ -73,11 +75,12 @@ class MqttMqMessageProducerTest {
         TraceContextHolder.bindTraceId("trace-mqtt-1");
 
         MqSendReceipt receipt = producer.send("devices", "status", message);
-        JSONObject payload = JSON.parseObject(new String(publishingGateway.payloadBytes));
+        JSONObject payload = JSON.parseObject((String) messageHandler.message.getPayload());
 
-        assertEquals("devices/status", publishingGateway.topic);
-        assertEquals(0, publishingGateway.qos);
-        assertEquals(true, publishingGateway.retained);
+        assertEquals("devices/status", messageHandler.message.getHeaders().get(MqttHeaders.TOPIC));
+        assertEquals(0, messageHandler.message.getHeaders().get(MqttHeaders.QOS));
+        assertEquals(true, messageHandler.message.getHeaders().get(MqttHeaders.RETAINED));
+        assertEquals("trace-mqtt-1", messageHandler.message.getHeaders().get("TRACE_ID"));
         assertEquals("device-1", payload.getString("bizKey"));
         assertEquals("trace-mqtt-1", payload.getString("traceId"));
         assertEquals("devices:status", receipt.destination());
@@ -90,7 +93,7 @@ class MqttMqMessageProducerTest {
     @Test
     void shouldRejectUnsupportedDelayOrderlyAndTransactionOperations() {
         MqttMqMessageProducer producer = new MqttMqMessageProducer(
-                new CapturingPublishingGateway(),
+                new CapturingMessageHandler(),
                 new MqProperties.Mqtt(),
                 new MqTraceProperties(),
                 List.of()
@@ -113,7 +116,7 @@ class MqttMqMessageProducerTest {
         MqProperties.Mqtt mqttProperties = new MqProperties.Mqtt();
         mqttProperties.setAsync(false);
         MqttMqMessageProducer producer = new MqttMqMessageProducer(
-                new CapturingPublishingGateway(),
+                new CapturingMessageHandler(),
                 mqttProperties,
                 new MqTraceProperties(),
                 List.of()
@@ -123,51 +126,23 @@ class MqttMqMessageProducerTest {
     }
 
     /**
-     * 测试用发布网关。
+     * 测试用消息处理器。
      */
-    private static final class CapturingPublishingGateway extends NettyMqttPublishingGateway {
+    private static final class CapturingMessageHandler implements MessageHandler {
 
         /**
-         * 最近一次发送主题。
+         * 最近一次发送消息。
          */
-        private String topic;
-
-        /**
-         * 最近一次发送负载。
-         */
-        private byte[] payloadBytes;
-
-        /**
-         * 最近一次发送 QoS。
-         */
-        private int qos;
-
-        /**
-         * 最近一次发送 retained 标识。
-         */
-        private boolean retained;
-
-        /**
-         * 创建测试用发布网关。
-         */
-        private CapturingPublishingGateway() {
-            super(new MqProperties.Mqtt());
-        }
+        private Message<?> message;
 
         /**
          * 捕获最近一次发送内容。
          *
-         * @param topic 主题
-         * @param payload 负载
-         * @param qos QoS
-         * @param retained retained 标识
+         * @param message Spring 消息
          */
         @Override
-        public void publish(String topic, byte[] payload, int qos, boolean retained) {
-            this.topic = topic;
-            this.payloadBytes = payload;
-            this.qos = qos;
-            this.retained = retained;
+        public void handleMessage(Message<?> message) {
+            this.message = message;
         }
     }
 
