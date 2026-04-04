@@ -1,7 +1,7 @@
 getboot:
   mq:
     enabled: true
-    type: rocketmq                     # rocketmq / kafka
+    type: rocketmq                     # rocketmq / kafka / mqtt
     trace:
       enabled: true
       header-name: TRACE_ID
@@ -18,3 +18,14 @@ getboot:
       producer:
         key-serializer: org.apache.kafka.common.serialization.StringSerializer
         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    mqtt:
+      enabled: false
+      server-uri: tcp://127.0.0.1:1883
+      client-id: demo-mqtt-client
+      username: demo
+      password: demo-pass
+      default-qos: 1
+      retained: false
+      async: false
+      connect-timeout-ms: 5000
+      keep-alive-seconds: 60

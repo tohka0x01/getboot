@@ -75,6 +75,7 @@
 - `getboot-http-client`
 - `getboot-rpc`
 - `getboot-mq`
+- `getboot-websocket`
 - `getboot-job`
 
 规则：
@@ -222,6 +223,7 @@ Foundation 模块同样适用“稳定层优先”的思路，只是不强制为
 com.getboot.mq.infrastructure.rocketmq.*
 com.getboot.rpc.infrastructure.dubbo.*
 com.getboot.auth.infrastructure.satoken.*
+com.getboot.websocket.infrastructure.jakarta.*
 ```
 
 ### 3.2 先有能力子域，再有技术栈

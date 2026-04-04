@@ -75,6 +75,7 @@
         <module>getboot-search</module>
         <module>getboot-mq</module>
         <module>getboot-rpc</module>
+        <module>getboot-websocket</module>
         <module>getboot-auth</module>
         <module>getboot-wechat</module>
         <module>getboot-payment</module>
@@ -191,6 +192,11 @@
             <dependency>
                 <groupId>com.dt</groupId>
                 <artifactId>getboot-rpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.dt</groupId>
+                <artifactId>getboot-websocket</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

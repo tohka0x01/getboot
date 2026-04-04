@@ -10,12 +10,12 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>getboot-mq</artifactId>
-    <description>MQ starter with RocketMQ and Kafka integration</description>
+    <artifactId>getboot-websocket</artifactId>
+    <description>WebSocket starter with session registry and message push support</description>
 
     <properties>
         <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-        <netty.mqtt.version>4.1.115.Final</netty.mqtt.version>
+        <tomcat.websocket.version>10.1.18</tomcat.websocket.version>
     </properties>
 
     <dependencies>
@@ -31,7 +31,7 @@
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
         <dependency>
@@ -46,30 +46,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.rocketmq</groupId>
-            <artifactId>rocketmq-spring-boot-starter</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.integration</groupId>
-            <artifactId>spring-integration-mqtt</artifactId>
-        </dependency>
-
-
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -85,5 +63,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

@@ -1,0 +1,10 @@
+getboot:
+  websocket:
+    enabled: true
+    endpoint: /getboot/ws
+    allowed-origins:
+      - https://demo.example.com
+    trace-header-name: X-Trace-Id
+    user-id-header-name: X-User-Id
+    user-id-query-parameter: userId
+    async-send-timeout-ms: 10000

@@ -50,6 +50,11 @@ public class MqProperties {
     private Kafka kafka = new Kafka();
 
     /**
+     * MQTT 能力开关配置。
+     */
+    private Mqtt mqtt = new Mqtt();
+
+    /**
      * RocketMQ 相关能力开关配置。
      *
      * @author qiheng
@@ -75,5 +80,64 @@ public class MqProperties {
          * 是否启用 Kafka 实现。
          */
         private boolean enabled = false;
+    }
+
+    /**
+     * MQTT 相关能力开关配置。
+     *
+     * @author qiheng
+     */
+    @Data
+    public static class Mqtt {
+
+        /**
+         * 是否启用 MQTT 实现。
+         */
+        private boolean enabled = false;
+
+        /**
+         * MQTT Broker 地址。
+         */
+        private String serverUri = "tcp://127.0.0.1:1883";
+
+        /**
+         * MQTT 客户端标识。
+         */
+        private String clientId = "getboot-mqtt";
+
+        /**
+         * MQTT 用户名。
+         */
+        private String username;
+
+        /**
+         * MQTT 密码。
+         */
+        private String password;
+
+        /**
+         * 默认 QoS 级别。
+         */
+        private int defaultQos = 1;
+
+        /**
+         * 默认是否发送 retained 消息。
+         */
+        private boolean retained;
+
+        /**
+         * 是否启用异步发送确认。
+         */
+        private boolean async;
+
+        /**
+         * 连接超时时间，单位毫秒。
+         */
+        private int connectTimeoutMs = 5000;
+
+        /**
+         * MQTT KeepAlive 秒数。
+         */
+        private int keepAliveSeconds = 60;
     }
 }

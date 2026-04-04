@@ -36,7 +36,7 @@
 - [x] `getboot-web`：当前 `4` 个测试；已补齐统一响应边界、全局异常处理与自动配置验证，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-database`：当前 `3` 个测试；已补齐数据库别名桥接、数据源自动配置边界与 MongoDB 初始化验证，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-http-client`：当前 `3` 个测试；已补齐三类 HTTP 客户端自动配置、单客户端关闭与自定义 Bean 回退验证，`2026-04-04` 已执行模块级 Maven `test`
-- [x] `getboot-mq`：当前 `4` 个测试；已补齐 RocketMQ/Kafka 配置桥接，并复核 Kafka 发送与监听 Trace 关键路径，`2026-04-04` 已执行模块级 Maven `test`
+- [x] `getboot-mq`：当前 `6` 个测试；已补齐 RocketMQ/Kafka 配置桥接、Kafka 发送与监听 Trace 关键路径，并新增 MQTT 发布与自动配置验证，`2026-04-05` 已执行模块级 Maven `test`
 - [x] `getboot-rpc`：当前 `3` 个测试；已补齐 Dubbo 配置桥接、RPC 安全自动配置与错误配置失败边界，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-job`：当前 `2` 个测试；已补齐 XXL-JOB 自动配置、定制器生效与未初始化客户端报错边界，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-lock`：当前 `4` 个测试；已补齐 SpEL 锁键解析、Redis 自动配置与多实现锁边界验证，`2026-04-04` 已执行模块级 Maven `test`
@@ -60,6 +60,7 @@
 - [x] `getboot-observability`：当前 `7` 个测试；已补齐 servlet/reactive/reactor 自动配置与 Prometheus 公共标签边界，并修正测试级 Reactor 钩子清理，`2026-04-05` 已执行模块级 Maven `test`
 - [x] `getboot-transaction`：当前 `3` 个测试；已确认 Seata 别名桥接、自动配置正反向分支与兼容性校验边界，`2026-04-05` 已执行模块级 Maven `test`
 - [x] `getboot-payment`：当前 `20` 个测试；已补齐支付模块总入口与支付宝自动配置验证，并复核属性绑定、服务注册及主支付链路覆盖，`2026-04-05` 已执行模块级 Maven `test`
+- [x] `getboot-websocket`：当前 `3` 个测试；已补齐配置绑定、Jakarta WebSocket 自动配置与按会话/用户/广播推送主路径验证，`2026-04-05` 已执行模块级 Maven `test`
 
 ## 验收口径
 

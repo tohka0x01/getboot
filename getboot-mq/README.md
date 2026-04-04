@@ -1,12 +1,13 @@
 # getboot-mq
 
-MQ 消息能力 starter，当前支持 `rocketmq` 与 `kafka` 两类实现，统一承接消息发送门面、TraceId 透传与实现前缀桥接。
+MQ 消息能力 starter，当前支持 `rocketmq`、`kafka` 与 `mqtt` 三类实现，统一承接消息发送门面、TraceId 透传与实现前缀桥接。
 
 ## 作用
 
 - 提供统一消息发送门面 `MqMessageProducer`
 - 提供统一消息头扩展点 `MqMessageHeadersCustomizer`
 - 提供 RocketMQ / Kafka 两套 Trace 恢复实现
+- 提供 MQTT 发布能力实现
 - 保留 RocketMQ 事务消息路由增强
 
 ## 接入方式
@@ -32,6 +33,7 @@ MQ 消息能力 starter，当前支持 `rocketmq` 与 `kafka` 两类实现，统
 | --- | --- | --- | --- |
 | `rocketmq` | `infrastructure.rocketmq.*` | Spring 容器中存在 RocketMQ 基础设施 | 支持事务消息、延迟级别、按 topic 路由事务回查 |
 | `kafka` | `infrastructure.kafka.*` | Spring 容器中存在 Spring Kafka 基础设施 | 支持通用发送、异步发送、按 key 有序发送、监听侧 Trace 恢复 |
+| `mqtt` | `infrastructure.mqtt.*` | 可直连 MQTT Broker | 首版支持统一发布入口、QoS/retained 配置与按主题发送 |
 
 ## 前置条件
 
@@ -39,6 +41,7 @@ MQ 消息能力 starter，当前支持 `rocketmq` 与 `kafka` 两类实现，统
 - 通过 `getboot.mq.type` 选择当前启用的实现，默认是 `rocketmq`
 - RocketMQ 事务消息仍需要业务侧实现 `TopicTransactionStrategy`
 - Kafka 发送 `MqMessage` 对象时，需要底层生产者自行配置合适的序列化器，例如 `JsonSerializer`
+- MQTT 当前只承接发布能力，不抽象订阅消费编排
 - `getboot-observability` 不是前置模块；只使用 MQ Trace 透传时，当前模块也可以独立工作
 
 ## 目录约定
@@ -49,6 +52,7 @@ MQ 消息能力 starter，当前支持 `rocketmq` 与 `kafka` 两类实现，统
 - `support`：目标地址与 Trace 支撑
 - `infrastructure.rocketmq.*`：RocketMQ 实现与自动装配
 - `infrastructure.kafka.*`：Kafka 实现与自动装配
+- `infrastructure.mqtt.*`：MQTT 发布实现与自动装配
 
 ## 配置示例
 
@@ -95,12 +99,32 @@ getboot:
         value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 ```
 
+MQTT：
+
+```yaml
+getboot:
+  mq:
+    enabled: true
+    type: mqtt
+    mqtt:
+      enabled: true
+      server-uri: tcp://127.0.0.1:1883
+      client-id: demo-mqtt-client
+      username: demo
+      password: demo-pass
+      default-qos: 1
+      retained: false
+      async: false
+```
+
 ## 默认 Bean
 
 - `MqMessageProducer`
   `type=rocketmq` 时注册 `RocketMqMessageProducer`
 - `MqMessageProducer`
   `type=kafka` 时注册 `KafkaMqMessageProducer`
+- `MqMessageProducer`
+  `type=mqtt` 时注册 `MqttMqMessageProducer`
 - `RocketMQMessageConverter`
   仅在 `type=rocketmq` 时注册增强版 Jackson 消息转换器
 - `TopicRoutingTransactionListener`
@@ -121,6 +145,7 @@ getboot:
 - 模块级 Trace 配置统一使用 `getboot.mq.trace.*`
 - RocketMQ 原生配置统一使用 `getboot.mq.rocketmq.*`，并桥接到底层 `rocketmq.*`
 - Kafka 原生配置统一使用 `getboot.mq.kafka.*`，并桥接到底层 `spring.kafka.*`
+- MQTT 配置统一使用 `getboot.mq.mqtt.*`
 
 ## 语义差异
 
@@ -129,14 +154,19 @@ getboot:
 - `kafka`：会把 `topic[:tag]` 中的 `topic` 作为真实 topic，`tag` 放入消息头 `GETBOOT_MQ_TAG`
 - `kafka`：`sendWithDelay(...)` 与 `sendTransaction(...)` 当前不支持，会直接抛出 `UnsupportedOperationException`
 - `kafka`：`sendOrderly(...)` 会把 `hashKey` 映射为 Kafka message key，利用分区键保证同 key 顺序
+- `mqtt`：首版只使用 `topic[:tag]` 中的 `topic` 作为真实 topic；`tag` 只保留在能力层头信息里，便于业务侧通过 `MqMessageHeadersCustomizer` 自行改写目标 topic
+- `mqtt`：`sendWithDelay(...)`、`sendOrderly(...)` 与 `sendTransaction(...)` 当前不支持，会直接抛出 `UnsupportedOperationException`
+- `mqtt`：TraceId 当前优先回填到消息体 `traceId` 字段，不承诺统一抽象 Broker 侧自定义头语义
 
 ## 已实现技术栈
 
 - RocketMQ
 - Kafka
+- MQTT
 
 ## 边界 / 补充文档
 
 - 当前统一入口主要面向消息生产、RocketMQ 事务消息路由和 Trace 透传，不负责抽象所有消费端编程模型
 - Kafka 这轮只补通用发送能力与监听侧 Trace 恢复，不把 RocketMQ 的延迟级别和事务语义错误上浮成“通用能力”
+- MQTT 这轮只补发布能力，不把订阅、会话保活、Broker 专属扩展和复杂路由策略抽成通用 API
 - 可直接参考 [`getboot-mq.yml.example`](./src/main/resources/getboot-mq.yml.example)

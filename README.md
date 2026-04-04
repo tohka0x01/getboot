@@ -1,6 +1,6 @@
 # getboot
 
-`getboot` 不是“再做一个 Spring Boot 脚手架”，而是专门收掉业务团队反复造底座这件事：统一响应、异常、`traceId`、Redis 接入、分布式锁、限流、HTTP/RPC/MQ 透传、支付接入、版本组合和自动装配。
+`getboot` 不是“再做一个 Spring Boot 脚手架”，而是专门收掉业务团队反复造底座这件事：统一响应、异常、`traceId`、Redis 接入、分布式锁、限流、HTTP/RPC/MQ/WebSocket 透传、支付接入、版本组合和自动装配。
 
 这个仓库的使用方式很简单：`继承父 pom`，`按场景引模块`，`按模块 README 接入`。
 
@@ -38,7 +38,7 @@
 这套仓库想提供的不是“帮你生成一个后台系统”，而是“把那批反复造、又必须造对的基础能力先收好”，让团队今天就能少掉一批重复劳动：
 
 - 不再自己找版本号、试依赖组合、反复验证中间件能不能共存
-- 不再每个项目都重写统一响应、异常、`traceId`、缓存、锁、客户端透传、支付接入这些公共层代码
+- 不再每个项目都重写统一响应、异常、`traceId`、缓存、锁、客户端透传、WebSocket 会话管理、支付接入这些公共层代码
 - 不再一上来就被“全家桶脚手架”绑死，模块按能力拆开，按需引入
 - 不再让业务代码直接耦合底层 SDK、自动配置细节和某一种实现
 - 不再靠口口相传带新人，模块 README 和文档直接给出稳定接入路径
@@ -288,7 +288,8 @@ transportMode: "NIO"
 | 搜索索引写入 / 基础查询 | `getboot-search` | 统一从 `SearchOperator` 进入；当前第一版覆盖索引写入、文档删除、基础查询、分页、排序和高亮 |
 | Webhook 安全编排 | `getboot-webhook` | 需要准备 Redis 幂等存储和限流能力，模块内部会复用 `getboot-idempotency` 与 `getboot-limiter` |
 | Dubbo 服务 | `getboot-rpc` + `getboot-observability` | 重点看 RPC 认证、Trace 透传和序列化安全 |
-| RocketMQ / Kafka | `getboot-mq` + `getboot-observability` | 重点看统一生产入口、Trace 透传；RocketMQ 额外支持事务消息路由 |
+| RocketMQ / Kafka / MQTT | `getboot-mq` + `getboot-observability` | 重点看统一生产入口、Trace 透传；RocketMQ 额外支持事务消息路由，MQTT 当前补统一发布入口 |
+| WebSocket 长连接推送 | `getboot-websocket` | 统一会话注册、按用户/会话推送和连接生命周期监听 |
 | 数据访问增强 | `getboot-database` | 重点看数据源预热、MongoDB 启动校验、MyBatis-Plus、ShardingSphere |
 | Seata 分布式事务 | `getboot-transaction` + `getboot-database` | 先确认分库分表与事务组合策略 |
 | Sa-Token 鉴权 | `getboot-auth` | 统一从 `CurrentUserAccessor` 进入，不要让业务层直接耦合实现 |
@@ -351,7 +352,9 @@ transportMode: "NIO"
 - [`getboot-rpc`](./getboot-rpc/README.md)
   Dubbo 安全增强、Trace 透传、配置适配
 - [`getboot-mq`](./getboot-mq/README.md)
-  RocketMQ / Kafka 生产、RocketMQ 事务消息、Trace 透传与配置适配
+  RocketMQ / Kafka / MQTT 生产、RocketMQ 事务消息、Trace 透传与配置适配
+- [`getboot-websocket`](./getboot-websocket/README.md)
+  WebSocket 会话注册、按用户/会话推送和文本消息监听
 - [`getboot-job`](./getboot-job/README.md)
   XXL-JOB 执行器和管理端客户端
 
