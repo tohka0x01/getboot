@@ -25,7 +25,9 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import java.net.http.HttpClient;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * AI 自动配置测试。
@@ -58,5 +60,68 @@ class AiAutoConfigurationTest {
             assertInstanceOf(AiModelClient.class, context.getBean(AiModelClient.class));
             assertInstanceOf(AiOperator.class, context.getBean(AiOperator.class));
         });
+    }
+
+    /**
+     * 验证禁用 AI 能力时跳过全部相关 Bean。
+     */
+    @Test
+    void shouldSkipAllAiBeansWhenDisabled() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(AiAutoConfiguration.class))
+                .withPropertyValues(
+                        "getboot.ai.enabled=false",
+                        "getboot.ai.openai.api-key=sk-test"
+                )
+                .run(context -> {
+                    assertFalse(context.containsBean("promptTemplateRenderer"));
+                    assertFalse(context.containsBean("openAiHttpClient"));
+                    assertFalse(context.containsBean("openAiRestGateway"));
+                    assertFalse(context.containsBean("aiModelClient"));
+                    assertFalse(context.containsBean("aiOperator"));
+                });
+    }
+
+    /**
+     * 验证缺少 API Key 时仅保留核心 Bean。
+     */
+    @Test
+    void shouldSkipOpenAiBeansWhenApiKeyMissing() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(AiAutoConfiguration.class))
+                .withPropertyValues(
+                        "getboot.ai.enabled=true",
+                        "getboot.ai.type=openai",
+                        "getboot.ai.openai.enabled=true"
+                )
+                .run(context -> {
+                    assertTrue(context.containsBean("promptTemplateRenderer"));
+                    assertFalse(context.containsBean("openAiHttpClient"));
+                    assertFalse(context.containsBean("openAiRestGateway"));
+                    assertFalse(context.containsBean("aiModelClient"));
+                    assertFalse(context.containsBean("aiOperator"));
+                });
+    }
+
+    /**
+     * 验证切换为非 OpenAI 类型时不会注册 OpenAI 相关 Bean。
+     */
+    @Test
+    void shouldSkipOpenAiBeansWhenTypeIsNotOpenAi() {
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(AiAutoConfiguration.class))
+                .withPropertyValues(
+                        "getboot.ai.enabled=true",
+                        "getboot.ai.type=azure-openai",
+                        "getboot.ai.openai.enabled=true",
+                        "getboot.ai.openai.api-key=sk-test"
+                )
+                .run(context -> {
+                    assertTrue(context.containsBean("promptTemplateRenderer"));
+                    assertFalse(context.containsBean("openAiHttpClient"));
+                    assertFalse(context.containsBean("openAiRestGateway"));
+                    assertFalse(context.containsBean("aiModelClient"));
+                    assertFalse(context.containsBean("aiOperator"));
+                });
     }
 }

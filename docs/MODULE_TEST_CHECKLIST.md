@@ -55,7 +55,7 @@
 - [x] `getboot-storage`：当前 `5` 个测试；已补齐 core 自动配置、bucket 路由与 MinIO 开关边界，并将 MinIO operator 测试改为 JDK 25 兼容实现，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-sms`：当前 `5` 个测试；已补齐 core 自动配置、签名路由边界，并修正阿里云依赖解析与 SDK 测试兼容性，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-search`：当前 `5` 个测试；已补齐查询参数校验、分页归一化与自动配置负分支边界，`2026-04-04` 已执行模块级 Maven `test`
-- [ ] `getboot-ai`：当前 `5` 个测试；确认 properties、模板渲染、OpenAI 适配和门面是否完整
+- [x] `getboot-ai`：当前 `7` 个测试；已补齐 AI/OpenAI 自动配置负分支、基础参数校验与向量相似度边界，`2026-04-04` 已执行模块级 Maven `test`
 - [ ] `getboot-limiter`：当前 `6` 个测试；确认自动配置、配置绑定和三类限流实现是否完整
 - [ ] `getboot-observability`：当前 `5` 个测试；确认 trace、prometheus、webflux、自动配置边界是否完整
 - [ ] `getboot-transaction`：当前 `3` 个测试；确认 Seata 别名桥接与自动配置边界是否完整
