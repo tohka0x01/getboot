@@ -19,12 +19,13 @@ import com.getboot.mq.api.message.MqMessage;
 import com.getboot.mq.api.model.MqSendReceipt;
 import com.getboot.mq.api.properties.MqTraceProperties;
 import com.getboot.support.api.trace.TraceContextHolder;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.kafka.support.SendResult;
@@ -35,10 +36,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link KafkaMqMessageProducer} 测试。
@@ -60,9 +57,7 @@ class KafkaMqMessageProducerTest {
      */
     @Test
     void shouldSendKafkaMessageWithLogicalDestinationAndTraceHeader() {
-        @SuppressWarnings("unchecked")
-        KafkaTemplate<Object, Object> kafkaTemplate = mock(KafkaTemplate.class);
-        when(kafkaTemplate.send(any(Message.class))).thenReturn(completedSendFuture());
+        TestKafkaTemplate kafkaTemplate = new TestKafkaTemplate();
 
         MqTraceProperties traceProperties = new MqTraceProperties();
         KafkaMqMessageProducer producer = new KafkaMqMessageProducer(
@@ -77,9 +72,7 @@ class KafkaMqMessageProducerTest {
 
         MqSendReceipt receipt = producer.send("orders", "created", message);
 
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
-        verify(kafkaTemplate).send(messageCaptor.capture());
-        Message<?> outboundMessage = messageCaptor.getValue();
+        Message<?> outboundMessage = kafkaTemplate.getLastMessage();
 
         assertEquals("orders", outboundMessage.getHeaders().get(KafkaHeaders.TOPIC));
         assertEquals("order-1", outboundMessage.getHeaders().get(KafkaHeaders.KEY));
@@ -96,9 +89,7 @@ class KafkaMqMessageProducerTest {
      */
     @Test
     void shouldRejectRocketMqSpecificDelayAndTransactionOperations() {
-        @SuppressWarnings("unchecked")
-        KafkaTemplate<Object, Object> kafkaTemplate = mock(KafkaTemplate.class);
-        KafkaMqMessageProducer producer = new KafkaMqMessageProducer(kafkaTemplate);
+        KafkaMqMessageProducer producer = new KafkaMqMessageProducer(new TestKafkaTemplate());
         DemoMessage message = new DemoMessage();
         message.setBizKey("order-2");
 
@@ -113,10 +104,65 @@ class KafkaMqMessageProducerTest {
      *
      * @return 已完成的 Kafka 发送结果
      */
-    private CompletableFuture<SendResult<Object, Object>> completedSendFuture() {
+    private static CompletableFuture<SendResult<Object, Object>> completedSendFuture() {
         ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>("orders", "key", "value");
         RecordMetadata metadata = new RecordMetadata(new TopicPartition("orders", 0), 0, 0, 0, 0, 0);
         return CompletableFuture.completedFuture(new SendResult<>(producerRecord, metadata));
+    }
+
+    /**
+     * 测试用 KafkaTemplate，避免依赖 Mockito。
+     */
+    private static final class TestKafkaTemplate extends KafkaTemplate<Object, Object> {
+
+        /**
+         * 最近一次发送的消息。
+         */
+        private Message<?> lastMessage;
+
+        /**
+         * 创建测试用 KafkaTemplate。
+         */
+        private TestKafkaTemplate() {
+            super(new TestProducerFactory());
+        }
+
+        /**
+         * 捕获发送消息并返回成功结果。
+         *
+         * @param message 待发送消息
+         * @return 已完成发送结果
+         */
+        @Override
+        public CompletableFuture<SendResult<Object, Object>> send(Message<?> message) {
+            this.lastMessage = message;
+            return completedSendFuture();
+        }
+
+        /**
+         * 返回最近一次发送的消息。
+         *
+         * @return 最近一次消息
+         */
+        private Message<?> getLastMessage() {
+            return lastMessage;
+        }
+    }
+
+    /**
+     * 测试用 ProducerFactory，占位即可。
+     */
+    private static final class TestProducerFactory implements ProducerFactory<Object, Object> {
+
+        /**
+         * 当前测试不会真正创建 Kafka Producer。
+         *
+         * @return 不返回
+         */
+        @Override
+        public Producer<Object, Object> createProducer() {
+            throw new UnsupportedOperationException("Producer creation is not required in tests.");
+        }
     }
 
     /**
