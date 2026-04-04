@@ -64,4 +64,17 @@ class SeataDistributedTransactionAutoConfigurationTest {
                 )
                 .run(context -> assertFalse(context.containsBean("seataShardingCompatibilityVerifier")));
     }
+
+    /**
+     * 验证 Seata 子开关关闭时不会注册兼容性校验器。
+     */
+    @Test
+    void shouldSkipCompatibilityVerifierWhenSeataDisabled() {
+        contextRunner
+                .withPropertyValues(
+                        "getboot.transaction.enabled=true",
+                        "getboot.transaction.seata.enabled=false"
+                )
+                .run(context -> assertFalse(context.containsBean("seataShardingCompatibilityVerifier")));
+    }
 }
