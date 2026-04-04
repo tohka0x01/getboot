@@ -31,10 +31,9 @@
 - [x] `getboot-cache`：当前 `3` 个测试；已补齐 Redis 别名桥接、自动配置与 `RedisCacheOperator` 验证，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-auth`：当前 `3` 个测试；已补齐 Sa-Token 别名桥接、自动配置与 `SaTokenCurrentUserAccessor` 主要路径验证，`2026-04-04` 已执行模块级 Maven `test`
 - [x] `getboot-coordination`：当前 `3` 个测试；已补齐 Redisson 别名桥接、Curator 配置绑定与 `CuratorZookeeperAutoConfiguration` 验证，`2026-04-04` 已执行模块级 Maven `test`
+- [x] `getboot-wechat`：当前 `3` 个测试；已补齐 `WechatProperties` 绑定、服务工厂初始化与 `WechatAutoConfiguration` 条件验证，`2026-04-04` 已执行模块级 Maven `test`
 
 ### P0：先清零测试空白
-
-- [ ] `getboot-wechat`：当前 `0` 个测试；重点补 `WechatProperties` 绑定、服务工厂初始化、自动配置条件
 
 ### P1：薄覆盖模块
 
