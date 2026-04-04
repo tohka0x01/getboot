@@ -19,6 +19,7 @@ import com.getboot.websocket.api.registry.WebSocketSessionRegistry;
 import com.getboot.websocket.api.sender.WebSocketMessageSender;
 import com.getboot.websocket.infrastructure.jakarta.endpoint.GetbootWebSocketEndpoint;
 import com.getboot.websocket.infrastructure.jakarta.endpoint.GetbootWebSocketEndpointConfigurator;
+import jakarta.websocket.server.ServerEndpointConfig.Configurator;
 import com.getboot.websocket.spi.WebSocketUserIdResolver;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -106,6 +107,24 @@ class JakartaWebSocketAutoConfigurationTest {
                 .run(context -> {
                     assertSame(customRegistry, context.getBean(WebSocketSessionRegistry.class));
                     assertSame(customSender, context.getBean(WebSocketMessageSender.class));
+                });
+    }
+
+    /**
+     * 验证业务方自定义 Endpoint 配置器存在时，自动配置会复用该配置器。
+     */
+    @Test
+    void shouldReuseCustomEndpointConfigurator() {
+        Configurator customConfigurator = new Configurator() {
+        };
+
+        contextRunner
+                .withBean(Configurator.class, () -> customConfigurator)
+                .run(context -> {
+                    assertSame(customConfigurator, context.getBean(Configurator.class));
+                    assertFalse(context.containsBean("getbootWebSocketEndpointConfigurator"));
+                    assertTrue(context.containsBean("getbootWebSocketEndpointInitializer"));
+                    assertInstanceOf(ServletContextInitializer.class, context.getBean("getbootWebSocketEndpointInitializer"));
                 });
     }
 }
