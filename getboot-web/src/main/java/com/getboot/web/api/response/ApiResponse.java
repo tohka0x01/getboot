@@ -15,7 +15,9 @@
  */
 package com.getboot.web.api.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.getboot.exception.api.code.CommonErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,6 +41,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @Accessors(chain = true)
 @ToString
+@JsonPropertyOrder({"status", "code", "message", "data", "meta"})
 public class ApiResponse<T> implements Serializable {
     /**
      * 序列化版本号。
@@ -67,9 +70,9 @@ public class ApiResponse<T> implements Serializable {
     public static final String DEFAULT_SYSTEM_ERROR_MESSAGE = CommonErrorCode.ERROR.message();
 
     /**
-     * 调试时间格式化器。
+     * 响应元信息时间格式化器。
      */
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter META_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 成功状态字符串
@@ -102,19 +105,21 @@ public class ApiResponse<T> implements Serializable {
     private String message = DEFAULT_SUCCESS_MESSAGE;
 
     /**
-     * 调试信息
+     * 响应元信息。
      */
-    private DebugInfo debug = new DebugInfo();
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private MetaInfo meta;
 
     /**
-     * 调试信息类
+     * 响应元信息。
      */
     @Getter
     @Setter
     @NoArgsConstructor
     @Accessors(chain = true)
     @ToString
-    public static class DebugInfo implements Serializable {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class MetaInfo implements Serializable {
         /**
          * 序列化版本号。
          */
@@ -122,65 +127,138 @@ public class ApiResponse<T> implements Serializable {
         private static final long serialVersionUID = 1L;
 
         /**
-         * 追踪ID
+         * 链路追踪标识。
          */
-        private String tid = "";
+        private String traceId;
 
         /**
-         * 格式化时间
+         * 响应时间。
          */
-        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        private String time = LocalDateTime.now().format(TIME_FORMATTER);
+        private String timestamp;
 
         /**
-         * 耗时（毫秒）
+         * 请求处理耗时（毫秒）。
          */
-        private Long cost = 0L;
+        private Long costMillis;
+
+        /**
+         * 创建默认元信息对象。
+         *
+         * @return 元信息对象
+         */
+        public static MetaInfo create() {
+            return new MetaInfo().setTimestamp(LocalDateTime.now().format(META_TIME_FORMATTER));
+        }
     }
 
     /**
      * 私有构造器
      */
     private ApiResponse(String status, T data, Integer code, String message) {
-        this.status = status;
+        this.status = validateStatus(status);
         this.data = data;
         this.code = code;
         this.message = message;
     }
 
     /**
-     * 判断响应是否成功
-     */
-    public boolean isSuccess() {
-        return SUCCESS_STATUS.equals(this.status) && SUCCESS_CODE.equals(this.code);
-    }
-
-    /**
-     * 判断响应是否失败
-     */
-    public boolean isFail() {
-        return !isSuccess();
-    }
-
-    /**
-     * 设置追踪ID
+     * 判断响应是否成功。
      *
-     * @param tid 追踪ID
+     * @return 是否成功
+     */
+    @JsonIgnore
+    public boolean isSuccess() {
+        return SUCCESS_STATUS.equals(this.status);
+    }
+
+    /**
+     * 判断响应是否失败。
+     *
+     * @return 是否失败
+     */
+    @JsonIgnore
+    public boolean isFail() {
+        return FAIL_STATUS.equals(this.status);
+    }
+
+    /**
+     * 设置链路追踪标识。
+     *
+     * @param traceId 链路追踪标识
      * @return 当前对象
      */
-    public ApiResponse<T> setTid(String tid) {
-        this.debug.setTid(tid);
+    public ApiResponse<T> setTraceId(String traceId) {
+        this.ensureMeta().setTraceId(traceId);
         return this;
     }
 
     /**
-     * 设置耗时
+     * 设置响应时间。
+     *
+     * @param timestamp 响应时间
+     * @return 当前对象
+     */
+    public ApiResponse<T> setTimestamp(String timestamp) {
+        this.ensureMeta().setTimestamp(timestamp);
+        return this;
+    }
+
+    /**
+     * 设置请求处理耗时。
+     *
+     * @param costMillis 请求处理耗时（毫秒）
+     * @return 当前对象
+     */
+    public ApiResponse<T> setCostMillis(Long costMillis) {
+        this.ensureMeta().setCostMillis(costMillis);
+        return this;
+    }
+
+    /**
+     * 设置追踪ID。
+     *
+     * @param tid 追踪ID
+     * @return 当前对象
+     */
+    @Deprecated(since = "1.0.0", forRemoval = false)
+    @JsonIgnore
+    public ApiResponse<T> setTid(String tid) {
+        return this.setTraceId(tid);
+    }
+
+    /**
+     * 设置耗时。
      *
      * @param cost 耗时（毫秒）
      * @return 当前对象
      */
+    @Deprecated(since = "1.0.0", forRemoval = false)
+    @JsonIgnore
     public ApiResponse<T> setCost(Long cost) {
-        this.debug.setCost(cost);
+        return this.setCostMillis(cost);
+    }
+
+    /**
+     * 获取旧版调试对象兼容视图。
+     *
+     * @return 响应元信息
+     */
+    @Deprecated(since = "1.0.0", forRemoval = false)
+    @JsonIgnore
+    public MetaInfo getDebug() {
+        return this.meta;
+    }
+
+    /**
+     * 设置旧版调试对象兼容视图。
+     *
+     * @param debug 旧版调试对象
+     * @return 当前对象
+     */
+    @Deprecated(since = "1.0.0", forRemoval = false)
+    @JsonIgnore
+    public ApiResponse<T> setDebug(MetaInfo debug) {
+        this.meta = debug;
         return this;
     }
 
@@ -353,7 +431,43 @@ public class ApiResponse<T> implements Serializable {
      * @return 当前对象
      */
     public ApiResponse<T> setStatus(String status) {
-        this.status = status;
+        this.status = validateStatus(status);
         return this;
+    }
+
+    /**
+     * 设置响应元信息。
+     *
+     * @param meta 响应元信息
+     * @return 当前对象
+     */
+    public ApiResponse<T> setMeta(MetaInfo meta) {
+        this.meta = meta;
+        return this;
+    }
+
+    /**
+     * 获取响应元信息，不存在时自动初始化。
+     *
+     * @return 响应元信息
+     */
+    private MetaInfo ensureMeta() {
+        if (this.meta == null) {
+            this.meta = MetaInfo.create();
+        }
+        return this.meta;
+    }
+
+    /**
+     * 校验响应状态值。
+     *
+     * @param status 响应状态
+     * @return 标准状态值
+     */
+    private static String validateStatus(String status) {
+        if (SUCCESS_STATUS.equals(status) || FAIL_STATUS.equals(status)) {
+            return status;
+        }
+        throw new IllegalArgumentException("Response status must be either success or fail.");
     }
 }

@@ -15,10 +15,13 @@
  */
 package com.getboot.web.api.response;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -27,6 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * @author qiheng
  */
 class ApiResponseTest {
+
+    /**
+     * JSON 序列化工具。
+     */
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * 验证默认成功响应。
@@ -56,27 +64,43 @@ class ApiResponseTest {
     }
 
     /**
-     * 验证调试信息链式设置。
+     * 验证响应元信息链式设置。
      */
     @Test
-    void shouldUpdateDebugInfo() {
+    void shouldUpdateMetaInfo() {
         ApiResponse<Void> response = ApiResponse.<Void>success()
-                .setTid("trace-123")
-                .setCost(25L);
+                .setTraceId("trace-123")
+                .setCostMillis(25L);
 
-        assertEquals("trace-123", response.getDebug().getTid());
-        assertEquals(25L, response.getDebug().getCost());
+        assertNotNull(response.getMeta());
+        assertEquals("trace-123", response.getMeta().getTraceId());
+        assertEquals(25L, response.getMeta().getCostMillis());
+        assertNotNull(response.getMeta().getTimestamp());
     }
 
     /**
-     * 验证自定义成功状态码不会被误判为默认成功响应。
+     * 验证旧版调试方法仍能映射到新元信息字段。
      */
     @Test
-    void shouldTreatCustomSuccessCodeAsNonDefaultSuccess() {
+    void shouldKeepDeprecatedDebugHelpersCompatible() {
+        ApiResponse<Void> response = ApiResponse.<Void>success()
+                .setTid("trace-compat")
+                .setCost(12L);
+
+        assertNotNull(response.getDebug());
+        assertEquals("trace-compat", response.getMeta().getTraceId());
+        assertEquals(12L, response.getMeta().getCostMillis());
+    }
+
+    /**
+     * 验证自定义成功状态码仍会被视为成功响应。
+     */
+    @Test
+    void shouldTreatCustomSuccessCodeAsSuccess() {
         ApiResponse<Void> response = ApiResponse.success(201, "created");
 
-        assertFalse(response.isSuccess());
-        assertTrue(response.isFail());
+        assertTrue(response.isSuccess());
+        assertFalse(response.isFail());
         assertEquals(ApiResponse.SUCCESS_STATUS, response.getStatus());
         assertEquals(201, response.getCode());
         assertEquals("created", response.getMessage());
@@ -94,5 +118,54 @@ class ApiResponseTest {
         assertEquals(409, response.getCode());
         assertEquals("payload", response.getData());
         assertEquals("conflict", response.getMessage());
+    }
+
+    /**
+     * 验证未设置元信息时不会输出额外的元信息节点。
+     *
+     * @throws Exception 序列化异常
+     */
+    @Test
+    void shouldOmitMetaWhenMetaIsNotInitialized() throws Exception {
+        ApiResponse<String> response = ApiResponse.success("ok");
+
+        String json = OBJECT_MAPPER.writeValueAsString(response);
+
+        assertNotNull(json);
+        assertFalse(json.contains("\"success\""));
+        assertFalse(json.contains("\"fail\""));
+        assertTrue(json.contains("\"status\":\"success\""));
+        assertFalse(json.contains("\"meta\""));
+    }
+
+    /**
+     * 验证响应元信息会按新协议字段序列化。
+     *
+     * @throws Exception 序列化异常
+     */
+    @Test
+    void shouldSerializeMetaInsteadOfLegacyDebugField() throws Exception {
+        ApiResponse<String> response = ApiResponse.<String>success("ok")
+                .setTraceId("trace-123")
+                .setCostMillis(25L);
+
+        String json = OBJECT_MAPPER.writeValueAsString(response);
+
+        assertTrue(json.contains("\"meta\""));
+        assertTrue(json.contains("\"traceId\":\"trace-123\""));
+        assertTrue(json.contains("\"costMillis\":25"));
+        assertFalse(json.contains("\"debug\""));
+    }
+
+    /**
+     * 验证非法状态值会被拒绝。
+     */
+    @Test
+    void shouldRejectUnsupportedStatusValue() {
+        ApiResponse<Void> response = ApiResponse.success();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> response.setStatus("partial"));
+
+        assertEquals("Response status must be either success or fail.", exception.getMessage());
     }
 }
