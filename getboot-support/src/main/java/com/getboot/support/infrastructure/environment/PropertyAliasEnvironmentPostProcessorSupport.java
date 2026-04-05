@@ -16,6 +16,7 @@
 package com.getboot.support.infrastructure.environment;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -122,10 +123,12 @@ public abstract class PropertyAliasEnvironmentPostProcessorSupport implements En
     /**
      * 返回环境后处理器顺序。
      *
-     * @return 最高优先级
+     * <p>需要晚于 ConfigData 处理器执行，才能读取 application.yml 中声明的能力层前缀配置。</p>
+     *
+     * @return ConfigData 之后的执行顺序
      */
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
+        return ConfigDataEnvironmentPostProcessor.ORDER + 1;
     }
 }

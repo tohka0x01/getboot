@@ -17,6 +17,7 @@ package com.getboot.support.infrastructure.environment;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.config.ConfigDataEnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
@@ -49,6 +50,16 @@ class PropertyAliasEnvironmentPostProcessorSupportTest {
 
         assertEquals("value-a", environment.getProperty("modern.demo.alpha"));
         assertEquals("keep-b", environment.getProperty("modern.demo.beta"));
+    }
+
+    /**
+     * 验证属性别名处理器会在 ConfigData 之后执行，确保能够读取 application.yml 中的配置。
+     */
+    @Test
+    void shouldRunAfterConfigDataEnvironmentPostProcessor() {
+        DemoPropertyAliasEnvironmentPostProcessor processor = new DemoPropertyAliasEnvironmentPostProcessor();
+
+        assertEquals(ConfigDataEnvironmentPostProcessor.ORDER + 1, processor.getOrder());
     }
 
     /**
