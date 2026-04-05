@@ -55,6 +55,13 @@ public class SentinelPropertyAliasEnvironmentPostProcessor extends PropertyAlias
                 suffix -> !suffix.startsWith("openfeign.")
                         && !suffix.startsWith("rest-template.")
                         && !suffix.startsWith("management.")
+                        && !suffix.startsWith("gateway.")
+        );
+        aliasPrefix(
+                environment,
+                aliasedProperties,
+                "getboot.governance.sentinel.gateway.",
+                "spring.cloud.sentinel.scg."
         );
         aliasProperty(
                 environment,

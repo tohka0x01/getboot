@@ -42,6 +42,9 @@ class SentinelPropertyAliasEnvironmentPostProcessorTest {
                 "getboot.governance.sentinel.filter.order", "-100",
                 "getboot.governance.sentinel.openfeign.enabled", "true",
                 "getboot.governance.sentinel.rest-template.enabled", "false",
+                "getboot.governance.sentinel.gateway.order", "-10",
+                "getboot.governance.sentinel.gateway.fallback.mode", "response",
+                "getboot.governance.sentinel.gateway.fallback.response-status", "429",
                 "getboot.governance.sentinel.management.endpoint.enabled", "true",
                 "getboot.governance.sentinel.management.health.enabled", "false"
         )));
@@ -53,12 +56,16 @@ class SentinelPropertyAliasEnvironmentPostProcessorTest {
         assertEquals("-100", environment.getProperty("spring.cloud.sentinel.filter.order"));
         assertEquals("true", environment.getProperty("feign.sentinel.enabled"));
         assertEquals("false", environment.getProperty("resttemplate.sentinel.enabled"));
+        assertEquals("-10", environment.getProperty("spring.cloud.sentinel.scg.order"));
+        assertEquals("response", environment.getProperty("spring.cloud.sentinel.scg.fallback.mode"));
+        assertEquals("429", environment.getProperty("spring.cloud.sentinel.scg.fallback.response-status"));
         assertEquals("true", environment.getProperty("management.endpoint.sentinel.enabled"));
         assertEquals("false", environment.getProperty("management.health.sentinel.enabled"));
         assertFalse(environment.containsProperty("spring.cloud.sentinel.openfeign.enabled"));
         assertFalse(environment.containsProperty("spring.cloud.sentinel.rest-template.enabled"));
         assertFalse(environment.containsProperty("spring.cloud.sentinel.management.endpoint.enabled"));
         assertFalse(environment.containsProperty("spring.cloud.sentinel.management.health.enabled"));
+        assertFalse(environment.containsProperty("spring.cloud.sentinel.gateway.order"));
     }
 
     /**

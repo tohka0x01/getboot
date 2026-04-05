@@ -17,6 +17,13 @@ getboot:
         enabled: true
       rest-template:
         enabled: true
+      gateway:
+        order: -1
+        fallback:
+          mode: response
+          response-status: 429
+          response-body: '{"status":"fail","code":429,"message":"Too many requests"}'
+          content-type: application/json;charset=UTF-8
       management:
         endpoint:
           enabled: true

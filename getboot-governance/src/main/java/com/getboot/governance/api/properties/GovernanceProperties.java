@@ -94,6 +94,11 @@ public class GovernanceProperties {
          * 管理端点适配配置。
          */
         private final Management management = new Management();
+
+        /**
+         * Gateway 适配配置。
+         */
+        private final Gateway gateway = new Gateway();
     }
 
     /**
@@ -162,6 +167,55 @@ public class GovernanceProperties {
          * 是否启用 RestTemplate 保护。
          */
         private boolean enabled = true;
+    }
+
+    /**
+     * Gateway 适配配置。
+     */
+    @Data
+    public static class Gateway {
+
+        /**
+         * Gateway Sentinel 过滤器顺序。
+         */
+        private Integer order = -1;
+
+        /**
+         * Gateway 触发流控时的回退响应配置。
+         */
+        private final GatewayFallback fallback = new GatewayFallback();
+    }
+
+    /**
+     * Gateway 阻断回退配置。
+     */
+    @Data
+    public static class GatewayFallback {
+
+        /**
+         * 回退模式，支持 response / redirect。
+         */
+        private String mode = "response";
+
+        /**
+         * redirect 模式下的跳转地址。
+         */
+        private String redirect;
+
+        /**
+         * response 模式下的 HTTP 状态码。
+         */
+        private Integer responseStatus = 429;
+
+        /**
+         * response 模式下的响应体。
+         */
+        private String responseBody = "{\"status\":\"fail\",\"code\":429,\"message\":\"Too many requests\"}";
+
+        /**
+         * response 模式下的响应类型。
+         */
+        private String contentType = "application/json;charset=UTF-8";
     }
 
     /**
