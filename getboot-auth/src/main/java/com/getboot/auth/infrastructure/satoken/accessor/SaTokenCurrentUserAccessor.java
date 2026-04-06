@@ -18,6 +18,7 @@ package com.getboot.auth.infrastructure.satoken.accessor;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.getboot.auth.api.accessor.CurrentUserAccessor;
+import com.getboot.auth.infrastructure.satoken.support.SaTokenSessionConstants;
 import com.getboot.exception.api.code.CommonErrorCode;
 import com.getboot.exception.api.exception.BusinessException;
 
@@ -31,11 +32,6 @@ import com.getboot.exception.api.exception.BusinessException;
 public class SaTokenCurrentUserAccessor implements CurrentUserAccessor {
 
     /**
-     * 会话中存储用户对象的键名。
-     */
-    private static final String USER_INFO_SESSION_KEY = "userInfo";
-
-    /**
      * 读取当前登录用户对象。
      *
      * @param userType 目标用户类型
@@ -46,7 +42,7 @@ public class SaTokenCurrentUserAccessor implements CurrentUserAccessor {
     public <T> T getCurrentUser(Class<T> userType) {
         Object userInfo;
         try {
-            userInfo = StpUtil.getSession().get(USER_INFO_SESSION_KEY);
+            userInfo = StpUtil.getSession().get(SaTokenSessionConstants.USER_INFO_SESSION_KEY);
         } catch (Exception exception) {
             throw new BusinessException(CommonErrorCode.TOKEN_EXPIRED);
         }

@@ -6,6 +6,7 @@
 
 - 统一认证能力入口，避免业务侧直接耦合 Sa-Token 细节
 - 提供当前登录用户访问门面 `CurrentUserAccessor`
+- 提供登录会话操作门面 `LoginSessionOperator`
 - 通过能力层前缀收敛 Sa-Token 配置
 - 提供可复用的 WebFlux Sa-Token 认证过滤能力，供网关或响应式入口统一接入
 - 提供可复用的 Servlet Sa-Token 认证过滤能力，供 MVC 应用统一接入
@@ -13,6 +14,7 @@
 ## 目录约定
 
 - `api.accessor`：对外稳定的当前用户访问接口
+- `api.session`：对外稳定的登录会话操作接口
 - `support`：内部辅助类与能力层适配
 - `infrastructure.satoken.*`：Sa-Token 实现与自动装配
 
@@ -50,6 +52,7 @@ getboot:
 ## 默认 Bean
 
 - `CurrentUserAccessor`：默认实现为 `SaTokenCurrentUserAccessor`
+- `LoginSessionOperator`：默认实现为 `SaTokenLoginSessionOperator`
 - `SaTokenWebFluxAuthChecker`：默认实现为 `DefaultSaTokenWebFluxAuthChecker`
 - `SaTokenServletAuthChecker`：默认实现为 `DefaultSaTokenServletAuthChecker`
 - `SaReactorFilter`：当 `getboot.auth.satoken.webflux.filter.enabled=true` 时自动注册
@@ -62,7 +65,9 @@ getboot:
 - 认证能力层入口统一收敛在 `com.getboot.auth.api.*`
 - 当前 Sa-Token 实现相关代码统一收敛在 `com.getboot.auth.infrastructure.satoken.*`
 - 推荐业务侧直接注入 `CurrentUserAccessor` 接口获取当前登录用户，避免直接耦合具体认证实现
+- 推荐业务侧直接注入 `LoginSessionOperator` 建立和退出登录会话，避免直接耦合具体认证实现
 - 若需要替换当前登录用户解析逻辑，可自行提供 `CurrentUserAccessor` Bean
+- 若需要替换登录会话建立逻辑，可自行提供 `LoginSessionOperator` Bean
 - 若需要覆盖 WebFlux 入口的登录态、角色或权限校验逻辑，可自行提供 `SaTokenWebFluxAuthChecker` Bean
 - 若需要覆盖 Servlet 入口的登录态、角色或权限校验逻辑，可自行提供 `SaTokenServletAuthChecker` Bean
 - `SaReactorFilter` 的路径命中、预检放行和失败返回由 `getboot.auth.satoken.webflux.filter.*` 统一控制

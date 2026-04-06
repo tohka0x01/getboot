@@ -27,8 +27,10 @@ import cn.hutool.json.JSONUtil;
 import com.getboot.auth.api.accessor.CurrentUserAccessor;
 import com.getboot.auth.api.properties.SaTokenServletFilterProperties;
 import com.getboot.auth.api.properties.SaTokenWebFluxFilterProperties;
+import com.getboot.auth.api.session.LoginSessionOperator;
 import com.getboot.auth.infrastructure.satoken.accessor.SaTokenCurrentUserAccessor;
 import com.getboot.auth.infrastructure.satoken.servlet.DefaultSaTokenServletAuthChecker;
+import com.getboot.auth.infrastructure.satoken.session.SaTokenLoginSessionOperator;
 import com.getboot.auth.infrastructure.satoken.webflux.DefaultSaTokenWebFluxAuthChecker;
 import com.getboot.auth.spi.SaTokenServletAuthChecker;
 import com.getboot.auth.spi.SaTokenWebFluxAuthChecker;
@@ -79,6 +81,17 @@ public class SaTokenAuthAutoConfiguration {
     @ConditionalOnMissingBean
     public CurrentUserAccessor currentUserAccessor() {
         return new SaTokenCurrentUserAccessor();
+    }
+
+    /**
+     * 注册登录会话操作门面。
+     *
+     * @return 登录会话操作门面
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public LoginSessionOperator loginSessionOperator() {
+        return new SaTokenLoginSessionOperator();
     }
 
     /**

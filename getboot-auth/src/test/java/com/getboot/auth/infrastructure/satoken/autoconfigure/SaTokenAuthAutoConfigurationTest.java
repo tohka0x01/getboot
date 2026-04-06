@@ -21,7 +21,9 @@ import cn.dev33.satoken.spring.SaBeanInject;
 import cn.dev33.satoken.spring.SaBeanRegister;
 import cn.dev33.satoken.filter.SaServletFilter;
 import com.getboot.auth.api.accessor.CurrentUserAccessor;
+import com.getboot.auth.api.session.LoginSessionOperator;
 import com.getboot.auth.infrastructure.satoken.accessor.SaTokenCurrentUserAccessor;
+import com.getboot.auth.infrastructure.satoken.session.SaTokenLoginSessionOperator;
 import com.getboot.auth.infrastructure.satoken.servlet.DefaultSaTokenServletAuthChecker;
 import com.getboot.auth.spi.SaTokenServletAuthChecker;
 import com.getboot.auth.infrastructure.satoken.webflux.DefaultSaTokenWebFluxAuthChecker;
@@ -84,6 +86,16 @@ class SaTokenAuthAutoConfigurationTest {
     }
 
     /**
+     * 验证默认情况下会注册登录会话操作门面。
+     */
+    @Test
+    void shouldRegisterLoginSessionOperatorByDefault() {
+        contextRunner.run(context ->
+                assertInstanceOf(SaTokenLoginSessionOperator.class, context.getBean(LoginSessionOperator.class))
+        );
+    }
+
+    /**
      * 验证业务方自定义访问器时，自动配置会回退。
      */
     @Test
@@ -106,6 +118,41 @@ class SaTokenAuthAutoConfigurationTest {
                     assertSame(customAccessor, context.getBean(CurrentUserAccessor.class));
                     assertFalse(context.getBean(CurrentUserAccessor.class) instanceof SaTokenCurrentUserAccessor);
                 });
+    }
+
+    /**
+     * 验证业务方自定义登录会话操作门面时，自动配置会回退。
+     */
+    @Test
+    void shouldBackOffWhenCustomLoginSessionOperatorProvided() {
+        LoginSessionOperator customOperator = new LoginSessionOperator() {
+            @Override
+            public void login(Long userId, Object userInfo) {
+            }
+
+            @Override
+            public void logout() {
+            }
+
+            @Override
+            public boolean isLogin() {
+                return false;
+            }
+
+            @Override
+            public String getTokenName() {
+                return "Authorization";
+            }
+
+            @Override
+            public String getTokenValue() {
+                return null;
+            }
+        };
+
+        contextRunner
+                .withBean(LoginSessionOperator.class, () -> customOperator)
+                .run(context -> assertSame(customOperator, context.getBean(LoginSessionOperator.class)));
     }
 
     /**
