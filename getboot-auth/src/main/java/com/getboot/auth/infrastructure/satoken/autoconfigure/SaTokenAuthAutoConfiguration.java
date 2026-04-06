@@ -20,13 +20,17 @@ import cn.dev33.satoken.context.SaTokenContext;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.StopMatchException;
+import cn.dev33.satoken.filter.SaServletFilter;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.getboot.auth.api.accessor.CurrentUserAccessor;
+import com.getboot.auth.api.properties.SaTokenServletFilterProperties;
 import com.getboot.auth.api.properties.SaTokenWebFluxFilterProperties;
 import com.getboot.auth.infrastructure.satoken.accessor.SaTokenCurrentUserAccessor;
+import com.getboot.auth.infrastructure.satoken.servlet.DefaultSaTokenServletAuthChecker;
 import com.getboot.auth.infrastructure.satoken.webflux.DefaultSaTokenWebFluxAuthChecker;
+import com.getboot.auth.spi.SaTokenServletAuthChecker;
 import com.getboot.auth.spi.SaTokenWebFluxAuthChecker;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -60,7 +64,10 @@ import java.util.Map;
         beforeName = "cn.dev33.satoken.spring.SaBeanInject"
 )
 @ConditionalOnClass(StpUtil.class)
-@EnableConfigurationProperties(SaTokenWebFluxFilterProperties.class)
+@EnableConfigurationProperties({
+        SaTokenWebFluxFilterProperties.class,
+        SaTokenServletFilterProperties.class
+})
 public class SaTokenAuthAutoConfiguration {
 
     /**
@@ -118,6 +125,18 @@ public class SaTokenAuthAutoConfiguration {
     }
 
     /**
+     * 注册默认的 Servlet 认证校验器。
+     *
+     * @return 默认认证校验器
+     */
+    @Bean
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnMissingBean
+    public SaTokenServletAuthChecker saTokenServletAuthChecker() {
+        return new DefaultSaTokenServletAuthChecker();
+    }
+
+    /**
      * 注册响应式 Sa-Token 认证过滤器。
      *
      * @param properties 认证过滤配置
@@ -132,6 +151,29 @@ public class SaTokenAuthAutoConfiguration {
     public SaReactorFilter saTokenWebFluxFilter(SaTokenWebFluxFilterProperties properties,
                                                 SaTokenWebFluxAuthChecker authChecker) {
         SaReactorFilter filter = new SaReactorFilter();
+        filter.setIncludeList(sanitizePatterns(properties.getIncludePaths(), List.of("/**")));
+        filter.setExcludeList(sanitizePatterns(properties.getExcludePaths(), List.of()));
+        filter.setBeforeAuth(ignored -> skipOptionsRequest(properties));
+        filter.setAuth(ignored -> authChecker.check());
+        filter.setError(throwable -> buildAuthFailureBody(properties, throwable));
+        return filter;
+    }
+
+    /**
+     * 注册 Servlet 认证过滤器。
+     *
+     * @param properties 认证过滤配置
+     * @param authChecker 认证校验器
+     * @return Servlet 认证过滤器
+     */
+    @Bean
+    @ConditionalOnClass(SaServletFilter.class)
+    @ConditionalOnWebApplication(type = Type.SERVLET)
+    @ConditionalOnProperty(prefix = "getboot.auth.satoken.servlet.filter", name = "enabled", havingValue = "true")
+    @ConditionalOnMissingBean(SaServletFilter.class)
+    public SaServletFilter saTokenServletFilter(SaTokenServletFilterProperties properties,
+                                                SaTokenServletAuthChecker authChecker) {
+        SaServletFilter filter = new SaServletFilter();
         filter.setIncludeList(sanitizePatterns(properties.getIncludePaths(), List.of("/**")));
         filter.setExcludeList(sanitizePatterns(properties.getExcludePaths(), List.of()));
         filter.setBeforeAuth(ignored -> skipOptionsRequest(properties));
@@ -168,6 +210,18 @@ public class SaTokenAuthAutoConfiguration {
     }
 
     /**
+     * 对预检请求直接放行，避免 Servlet 入口在 CORS 协商阶段提前拦截。
+     *
+     * @param properties 认证过滤配置
+     */
+    private void skipOptionsRequest(SaTokenServletFilterProperties properties) {
+        String requestMethod = SaHolder.getRequest().getMethod();
+        if (properties.isSkipOptionsRequest() && "OPTIONS".equalsIgnoreCase(requestMethod)) {
+            throw new StopMatchException();
+        }
+    }
+
+    /**
      * 构造认证失败响应体。
      *
      * @param properties 认证过滤配置
@@ -188,6 +242,26 @@ public class SaTokenAuthAutoConfiguration {
     }
 
     /**
+     * 构造认证失败响应体。
+     *
+     * @param properties 认证过滤配置
+     * @param throwable 当前异常
+     * @return JSON 响应体
+     */
+    private String buildAuthFailureBody(SaTokenServletFilterProperties properties, Throwable throwable) {
+        FailureDescriptor failureDescriptor = resolveFailureDescriptor(properties, throwable);
+        if (StringUtils.hasText(properties.getContentType())) {
+            SaHolder.getResponse().setHeader("Content-Type", properties.getContentType());
+        }
+        SaHolder.getResponse().setStatus(failureDescriptor.status());
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", "fail");
+        body.put("code", failureDescriptor.code());
+        body.put("message", failureDescriptor.message());
+        return JSONUtil.toJsonStr(body);
+    }
+
+    /**
      * 解析认证失败的返回规范。
      *
      * @param properties 认证过滤配置
@@ -195,6 +269,35 @@ public class SaTokenAuthAutoConfiguration {
      * @return 失败描述
      */
     private FailureDescriptor resolveFailureDescriptor(SaTokenWebFluxFilterProperties properties, Throwable throwable) {
+        if (throwable instanceof NotPermissionException) {
+            return new FailureDescriptor(
+                    properties.getForbiddenStatus(),
+                    properties.getForbiddenCode(),
+                    properties.getForbiddenMessage()
+            );
+        }
+        if (throwable instanceof NotLoginException) {
+            return new FailureDescriptor(
+                    properties.getUnauthorizedStatus(),
+                    properties.getUnauthorizedCode(),
+                    properties.getUnauthorizedMessage()
+            );
+        }
+        return new FailureDescriptor(
+                properties.getForbiddenStatus(),
+                properties.getForbiddenCode(),
+                properties.getForbiddenMessage()
+        );
+    }
+
+    /**
+     * 解析认证失败的返回规范。
+     *
+     * @param properties 认证过滤配置
+     * @param throwable 当前异常
+     * @return 失败描述
+     */
+    private FailureDescriptor resolveFailureDescriptor(SaTokenServletFilterProperties properties, Throwable throwable) {
         if (throwable instanceof NotPermissionException) {
             return new FailureDescriptor(
                     properties.getForbiddenStatus(),

@@ -16,3 +16,13 @@ getboot:
           skip-options-request: true
           unauthorized-message: Unauthorized
           forbidden-message: Forbidden
+      servlet:
+        filter:
+          enabled: false
+          include-paths:
+            - /admin/**
+          exclude-paths:
+            - /admin/system/ping
+          skip-options-request: true
+          unauthorized-message: Unauthorized
+          forbidden-message: Forbidden

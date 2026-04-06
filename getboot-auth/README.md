@@ -8,6 +8,7 @@
 - 提供当前登录用户访问门面 `CurrentUserAccessor`
 - 通过能力层前缀收敛 Sa-Token 配置
 - 提供可复用的 WebFlux Sa-Token 认证过滤能力，供网关或响应式入口统一接入
+- 提供可复用的 Servlet Sa-Token 认证过滤能力，供 MVC 应用统一接入
 
 ## 目录约定
 
@@ -35,13 +36,24 @@ getboot:
             - /api/admin/system/ping
           skip-options-request: true
           unauthorized-message: Unauthorized
+      servlet:
+        filter:
+          enabled: true
+          include-paths:
+            - /admin/**
+          exclude-paths:
+            - /admin/system/ping
+          skip-options-request: true
+          unauthorized-message: Unauthorized
 ```
 
 ## 默认 Bean
 
 - `CurrentUserAccessor`：默认实现为 `SaTokenCurrentUserAccessor`
 - `SaTokenWebFluxAuthChecker`：默认实现为 `DefaultSaTokenWebFluxAuthChecker`
+- `SaTokenServletAuthChecker`：默认实现为 `DefaultSaTokenServletAuthChecker`
 - `SaReactorFilter`：当 `getboot.auth.satoken.webflux.filter.enabled=true` 时自动注册
+- `SaServletFilter`：当 `getboot.auth.satoken.servlet.filter.enabled=true` 时自动注册 Servlet 认证过滤器
 
 ## 扩展点
 
@@ -52,9 +64,12 @@ getboot:
 - 推荐业务侧直接注入 `CurrentUserAccessor` 接口获取当前登录用户，避免直接耦合具体认证实现
 - 若需要替换当前登录用户解析逻辑，可自行提供 `CurrentUserAccessor` Bean
 - 若需要覆盖 WebFlux 入口的登录态、角色或权限校验逻辑，可自行提供 `SaTokenWebFluxAuthChecker` Bean
+- 若需要覆盖 Servlet 入口的登录态、角色或权限校验逻辑，可自行提供 `SaTokenServletAuthChecker` Bean
 - `SaReactorFilter` 的路径命中、预检放行和失败返回由 `getboot.auth.satoken.webflux.filter.*` 统一控制
+- Servlet 过滤器的路径命中、预检放行和失败返回由 `getboot.auth.satoken.servlet.filter.*` 统一控制
 
 ## 已实现技术栈
 
 - Sa-Token
 - Sa-Token Reactor
+- Jakarta Servlet

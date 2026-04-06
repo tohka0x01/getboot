@@ -19,14 +19,18 @@ import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.reactor.spring.SaTokenContextRegister;
 import cn.dev33.satoken.spring.SaBeanInject;
 import cn.dev33.satoken.spring.SaBeanRegister;
+import cn.dev33.satoken.filter.SaServletFilter;
 import com.getboot.auth.api.accessor.CurrentUserAccessor;
 import com.getboot.auth.infrastructure.satoken.accessor.SaTokenCurrentUserAccessor;
+import com.getboot.auth.infrastructure.satoken.servlet.DefaultSaTokenServletAuthChecker;
+import com.getboot.auth.spi.SaTokenServletAuthChecker;
 import com.getboot.auth.infrastructure.satoken.webflux.DefaultSaTokenWebFluxAuthChecker;
 import com.getboot.auth.spi.SaTokenWebFluxAuthChecker;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -56,6 +60,18 @@ class SaTokenAuthAutoConfigurationTest {
                     SaTokenAuthAutoConfiguration.class
             ))
             .withPropertyValues("spring.main.web-application-type=reactive");
+
+    /**
+     * Servlet 测试用上下文运行器。
+     */
+    private final WebApplicationContextRunner servletContextRunner = new WebApplicationContextRunner()
+            .withConfiguration(AutoConfigurations.of(
+                    SaBeanRegister.class,
+                    SaBeanInject.class,
+                    SaTokenContextRegister.class,
+                    SaTokenAuthAutoConfiguration.class
+            ))
+            .withPropertyValues("spring.main.web-application-type=servlet");
 
     /**
      * 验证默认情况下会注册当前用户访问器。
@@ -104,6 +120,17 @@ class SaTokenAuthAutoConfigurationTest {
     }
 
     /**
+     * 验证默认会注册 Servlet 认证校验器。
+     */
+    @Test
+    void shouldRegisterDefaultServletAuthChecker() {
+        servletContextRunner.run(context ->
+                assertInstanceOf(DefaultSaTokenServletAuthChecker.class,
+                        context.getBean(SaTokenServletAuthChecker.class))
+        );
+    }
+
+    /**
      * 验证未显式启用时不会注册响应式认证过滤器。
      */
     @Test
@@ -123,6 +150,16 @@ class SaTokenAuthAutoConfigurationTest {
     }
 
     /**
+     * 验证启用后会注册 Servlet 认证过滤器。
+     */
+    @Test
+    void shouldRegisterServletFilterWhenEnabled() {
+        servletContextRunner
+                .withPropertyValues("getboot.auth.satoken.servlet.filter.enabled=true")
+                .run(context -> org.assertj.core.api.Assertions.assertThat(context).hasSingleBean(SaServletFilter.class));
+    }
+
+    /**
      * 验证业务方自定义认证校验器时，自动配置会回退。
      */
     @Test
@@ -133,5 +170,18 @@ class SaTokenAuthAutoConfigurationTest {
         reactiveContextRunner
                 .withBean(SaTokenWebFluxAuthChecker.class, () -> customChecker)
                 .run(context -> assertSame(customChecker, context.getBean(SaTokenWebFluxAuthChecker.class)));
+    }
+
+    /**
+     * 验证业务方自定义 Servlet 认证校验器时，自动配置会回退。
+     */
+    @Test
+    void shouldBackOffWhenCustomServletAuthCheckerProvided() {
+        SaTokenServletAuthChecker customChecker = () -> {
+        };
+
+        servletContextRunner
+                .withBean(SaTokenServletAuthChecker.class, () -> customChecker)
+                .run(context -> assertSame(customChecker, context.getBean(SaTokenServletAuthChecker.class)));
     }
 }
