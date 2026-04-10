@@ -163,6 +163,11 @@ getboot:
         env: local
     prometheus:
       enabled: true
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus
   http-client:
     openfeign:
       trace:
@@ -185,12 +190,6 @@ getboot:
     redis:
       enabled: true
       key-prefix: demo_lock
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
 ```
 
 `classpath:redisson/redisson.yaml` 示例：
