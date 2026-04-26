@@ -20,6 +20,7 @@ import com.getboot.httpclient.infrastructure.resttemplate.support.TraceRestTempl
 import com.getboot.httpclient.support.headers.OutboundHttpHeadersResolver;
 import com.getboot.httpclient.spi.resttemplate.RestTemplateTraceRequestCustomizer;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -72,7 +73,8 @@ public class RestTemplateHttpClientAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(name = "getbootTraceRestTemplateCustomizer")
-    public RestTemplateCustomizer getbootTraceRestTemplateCustomizer(ClientHttpRequestInterceptor interceptor) {
+    public RestTemplateCustomizer getbootTraceRestTemplateCustomizer(
+            @Qualifier("getbootTraceRestTemplateInterceptor") ClientHttpRequestInterceptor interceptor) {
         return restTemplate -> restTemplate.getInterceptors().add(interceptor);
     }
 }

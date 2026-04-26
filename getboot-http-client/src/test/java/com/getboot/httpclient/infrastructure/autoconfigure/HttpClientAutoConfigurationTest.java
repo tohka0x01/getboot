@@ -111,6 +111,34 @@ class HttpClientAutoConfigurationTest {
     }
 
     /**
+     * 验证存在其他 RestTemplate 拦截器时，定制器仍只挂载 getboot Trace 拦截器
+     */
+    @Test
+    void shouldOnlyUseGetbootTraceRestTemplateInterceptorWhenOtherInterceptorsExist() {
+        ClientHttpRequestInterceptor externalInterceptor =
+                (request, body, execution) -> execution.execute(request, body);
+
+        contextRunner
+                .withBean(
+                        "externalRestTemplateInterceptor",
+                        ClientHttpRequestInterceptor.class,
+                        () -> externalInterceptor
+                )
+                .run(context -> {
+                    ClientHttpRequestInterceptor restTemplateInterceptor =
+                            context.getBean("getbootTraceRestTemplateInterceptor", ClientHttpRequestInterceptor.class);
+                    RestTemplateCustomizer restTemplateCustomizer =
+                            context.getBean("getbootTraceRestTemplateCustomizer", RestTemplateCustomizer.class);
+                    RestTemplate restTemplate = new RestTemplate();
+
+                    restTemplateCustomizer.customize(restTemplate);
+
+                    assertTrue(restTemplate.getInterceptors().contains(restTemplateInterceptor));
+                    assertFalse(restTemplate.getInterceptors().contains(externalInterceptor));
+                });
+    }
+
+    /**
      * 验证关闭单个客户端增强时，不会影响其他客户端的默认装配。
      */
     @Test
