@@ -16,6 +16,8 @@
 package com.getboot.web.api.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.getboot.support.api.trace.TraceContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,6 +37,14 @@ class ApiResponseTest {
      * JSON 序列化工具。
      */
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    /**
+     * 清理测试写入的 Trace 上下文。
+     */
+    @AfterEach
+    void tearDown() {
+        TraceContextHolder.clear();
+    }
 
     /**
      * 验证默认成功响应。
@@ -75,7 +85,19 @@ class ApiResponseTest {
         assertNotNull(response.getMeta());
         assertEquals("trace-123", response.getMeta().getTraceId());
         assertEquals(25L, response.getMeta().getCostMillis());
-        assertNotNull(response.getMeta().getTimestamp());
+    }
+
+    /**
+     * 验证创建响应时会自动带上当前链路 TraceId。
+     */
+    @Test
+    void shouldCreateResponseWithCurrentTraceId() {
+        TraceContextHolder.bindTraceId("abc123xyz");
+
+        ApiResponse<String> response = ApiResponse.success("ok");
+
+        assertNotNull(response.getMeta());
+        assertEquals("abc123xyz", response.getMeta().getTraceId());
     }
 
     /**
@@ -132,8 +154,8 @@ class ApiResponseTest {
         String json = OBJECT_MAPPER.writeValueAsString(response);
 
         assertNotNull(json);
-        assertFalse(json.contains("\"success\""));
-        assertFalse(json.contains("\"fail\""));
+        assertFalse(json.contains("\"success\":"));
+        assertFalse(json.contains("\"fail\":"));
         assertTrue(json.contains("\"status\":\"success\""));
         assertFalse(json.contains("\"meta\""));
     }
@@ -154,6 +176,7 @@ class ApiResponseTest {
         assertTrue(json.contains("\"meta\""));
         assertTrue(json.contains("\"traceId\":\"trace-123\""));
         assertTrue(json.contains("\"costMillis\":25"));
+        assertFalse(json.contains("\"timestamp\""));
         assertFalse(json.contains("\"debug\""));
     }
 

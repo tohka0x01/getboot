@@ -125,6 +125,24 @@ class ObservabilityAutoConfigurationTest {
     }
 
     /**
+     * 验证短 TraceId 生成器只生成小写字母和数字。
+     */
+    @Test
+    void shouldRegisterShortTraceIdGeneratorWhenConfigured() {
+        contextRunner
+                .withPropertyValues(
+                        "getboot.observability.trace.id-generator=short",
+                        "getboot.observability.trace.short-length=12"
+                )
+                .run(context -> {
+                    String traceId = context.getBean(TraceIdGenerator.class).generate();
+
+                    assertEquals(12, traceId.length());
+                    assertTrue(traceId.matches("[0-9a-z]+"));
+                });
+    }
+
+    /**
      * 验证存在自定义任务装饰器时仍会优先挂载 GetBoot 的 Trace 装饰器。
      */
     @Test

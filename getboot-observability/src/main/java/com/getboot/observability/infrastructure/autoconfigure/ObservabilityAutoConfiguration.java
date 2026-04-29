@@ -16,6 +16,7 @@
 package com.getboot.observability.infrastructure.autoconfigure;
 
 import com.getboot.observability.api.properties.ObservabilityTraceProperties;
+import com.getboot.observability.support.ShortTraceIdGenerator;
 import com.getboot.observability.support.TraceTaskDecorator;
 import com.getboot.observability.support.TraceTaskDecoratorBeanPostProcessor;
 import com.getboot.observability.support.UuidTraceIdGenerator;
@@ -47,11 +48,15 @@ public class ObservabilityAutoConfiguration {
     /**
      * 注册默认 TraceId 生成器。
      *
+     * @param traceProperties Trace 配置
      * @return TraceId 生成器
      */
     @Bean
     @ConditionalOnMissingBean
-    public TraceIdGenerator traceIdGenerator() {
+    public TraceIdGenerator traceIdGenerator(ObservabilityTraceProperties traceProperties) {
+        if ("short".equalsIgnoreCase(traceProperties.getIdGenerator())) {
+            return new ShortTraceIdGenerator(traceProperties.getShortLength());
+        }
         return new UuidTraceIdGenerator();
     }
 

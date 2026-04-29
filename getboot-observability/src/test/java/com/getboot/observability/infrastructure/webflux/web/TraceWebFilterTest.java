@@ -16,9 +16,11 @@
 package com.getboot.observability.infrastructure.webflux.web;
 
 import com.getboot.observability.api.properties.ObservabilityTraceProperties;
+import com.getboot.observability.infrastructure.skywalking.support.SkywalkingTraceIdResolver;
 import com.getboot.observability.spi.ReactiveTraceContextCustomizer;
 import com.getboot.observability.spi.TraceIdGenerator;
 import com.getboot.support.api.trace.TraceContextHolder;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -38,6 +40,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
  * @author qiheng
  */
 class TraceWebFilterTest {
+
+    /**
+     * 清理测试写入的链路上下文。
+     */
+    @AfterEach
+    void tearDown() {
+        org.apache.skywalking.apm.toolkit.trace.TraceContext.setTraceId(null);
+        TraceContextHolder.clear();
+        MDC.clear();
+    }
 
     /**
      * 验证 WebFlux 过滤器会在订阅阶段绑定并在结束后恢复 Trace 上下文。
@@ -78,5 +90,42 @@ class TraceWebFilterTest {
         assertNull(TraceContextHolder.getTraceId());
         assertNull(MDC.get("traceId"));
         assertNull(MDC.get("tenantId"));
+    }
+
+    /**
+     * 验证接入 SkyWalking 后优先使用 SkyWalking TraceId。
+     */
+    @Test
+    void shouldPreferSkywalkingTraceIdWhenResolverAvailable() {
+        org.apache.skywalking.apm.toolkit.trace.TraceContext.setTraceId("sw-trace-9001");
+        ObservabilityTraceProperties properties = new ObservabilityTraceProperties();
+        properties.setHeaderName("X-Trace-Id");
+        properties.setMdcKey("traceId");
+        properties.setRequestAttributeName("GETBOOT_TRACE_ID");
+        TraceIdGenerator traceIdGenerator = () -> "generated-trace-id";
+        TraceWebFilter filter = new TraceWebFilter(
+                properties,
+                traceIdGenerator,
+                List.of(new SkywalkingTraceIdResolver()),
+                List.of()
+        );
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+                MockServerHttpRequest.get("/orders")
+                        .header("X-Trace-Id", "incoming-trace-id")
+                        .build()
+        );
+        WebFilterChain chain = serverWebExchange -> Mono.fromRunnable(() -> {
+            assertEquals("sw-trace-9001", TraceContextHolder.getTraceId());
+            assertEquals("sw-trace-9001", MDC.get("traceId"));
+            assertEquals("sw-trace-9001", serverWebExchange.getAttribute("GETBOOT_TRACE_ID"));
+            assertEquals("sw-trace-9001",
+                    serverWebExchange.getRequest().getHeaders().getFirst("X-Trace-Id"));
+            assertEquals("sw-trace-9001", serverWebExchange.getResponse().getHeaders().getFirst("X-Trace-Id"));
+        });
+
+        filter.filter(exchange, chain).block();
+
+        assertNull(TraceContextHolder.getTraceId());
+        assertNull(MDC.get("traceId"));
     }
 }

@@ -33,6 +33,10 @@
             <artifactId>getboot-exception</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.dt</groupId>
+            <artifactId>getboot-support</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>

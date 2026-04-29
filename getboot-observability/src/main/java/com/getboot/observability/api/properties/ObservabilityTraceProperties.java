@@ -60,6 +60,16 @@ public class ObservabilityTraceProperties {
     private String requestAttributeName = "GETBOOT_TRACE_ID";
 
     /**
+     * TraceId 生成器类型，支持 uuid、short。
+     */
+    private String idGenerator = "uuid";
+
+    /**
+     * 短 TraceId 长度。
+     */
+    private int shortLength = 16;
+
+    /**
      * 是否启用异步线程 Trace 上下文透传。
      */
     private boolean asyncPropagationEnabled = true;

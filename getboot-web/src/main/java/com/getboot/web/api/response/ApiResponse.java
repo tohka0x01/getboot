@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.getboot.exception.api.code.CommonErrorCode;
+import com.getboot.support.api.trace.TraceContextHolder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,8 +28,6 @@ import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * 统一响应结果封装。
@@ -68,11 +67,6 @@ public class ApiResponse<T> implements Serializable {
      * 默认系统错误提示信息
      */
     public static final String DEFAULT_SYSTEM_ERROR_MESSAGE = CommonErrorCode.ERROR.message();
-
-    /**
-     * 响应元信息时间格式化器。
-     */
-    private static final DateTimeFormatter META_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 成功状态字符串
@@ -132,11 +126,6 @@ public class ApiResponse<T> implements Serializable {
         private String traceId;
 
         /**
-         * 响应时间。
-         */
-        private String timestamp;
-
-        /**
          * 请求处理耗时（毫秒）。
          */
         private Long costMillis;
@@ -147,7 +136,7 @@ public class ApiResponse<T> implements Serializable {
          * @return 元信息对象
          */
         public static MetaInfo create() {
-            return new MetaInfo().setTimestamp(LocalDateTime.now().format(META_TIME_FORMATTER));
+            return new MetaInfo();
         }
     }
 
@@ -159,6 +148,7 @@ public class ApiResponse<T> implements Serializable {
         this.data = data;
         this.code = code;
         this.message = message;
+        applyTraceMeta();
     }
 
     /**
@@ -189,17 +179,6 @@ public class ApiResponse<T> implements Serializable {
      */
     public ApiResponse<T> setTraceId(String traceId) {
         this.ensureMeta().setTraceId(traceId);
-        return this;
-    }
-
-    /**
-     * 设置响应时间。
-     *
-     * @param timestamp 响应时间
-     * @return 当前对象
-     */
-    public ApiResponse<T> setTimestamp(String timestamp) {
-        this.ensureMeta().setTimestamp(timestamp);
         return this;
     }
 
@@ -456,6 +435,16 @@ public class ApiResponse<T> implements Serializable {
             this.meta = MetaInfo.create();
         }
         return this.meta;
+    }
+
+    /**
+     * 自动写入当前链路 TraceId。
+     */
+    private void applyTraceMeta() {
+        String traceId = TraceContextHolder.getTraceId();
+        if (traceId != null && !traceId.isBlank()) {
+            this.ensureMeta().setTraceId(traceId);
+        }
     }
 
     /**
