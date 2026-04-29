@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GetBoot 验证台</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">G</div>
+            <div>
+                <div class="brand-title">GetBoot 验证台</div>
+                <div class="brand-subtitle">公共能力手动验收</div>
+            </div>
+        </div>
+        <nav class="side-nav">
+            <button class="nav-item active" data-target="overview">能力总览</button>
+            <button class="nav-item" data-target="checks">手动验证</button>
+            <button class="nav-item" data-target="response">响应详情</button>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <section class="page-header">
+            <div>
+                <p class="eyebrow">GetBoot Capability Lab</p>
+                <h1>把公共能力变成可以点、可以看、可以复现的验证入口</h1>
+            </div>
+            <div class="header-actions">
+                <button class="ghost-button" id="refreshBtn">刷新能力</button>
+                <button class="primary-button" id="traceBtn">验证 Trace</button>
+            </div>
+        </section>
+
+        <section class="stats-grid" id="overview">
+            <article class="stat-card">
+                <span>应用</span>
+                <strong id="appName">-</strong>
+            </article>
+            <article class="stat-card">
+                <span>环境</span>
+                <strong id="profiles">-</strong>
+            </article>
+            <article class="stat-card">
+                <span>能力项</span>
+                <strong id="capabilityCount">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>可手测</span>
+                <strong id="readyCount">0</strong>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <article class="panel capability-panel">
+                <div class="panel-title">
+                    <div>
+                        <h2>能力清单</h2>
+                        <p>先看模块是否在验证台出现，再逐个接真实验证动作</p>
+                    </div>
+                    <select id="categoryFilter">
+                        <option value="all">全部分组</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>模块</th>
+                            <th>能力</th>
+                            <th>分组</th>
+                            <th>状态</th>
+                            <th>依赖</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="capabilityTable"></tbody>
+                    </table>
+                </div>
+            </article>
+
+            <aside class="panel check-panel" id="checks">
+                <div class="panel-title compact">
+                    <div>
+                        <h2>手动验证</h2>
+                        <p>像 Postman 一样点一下就能看到响应</p>
+                    </div>
+                </div>
+                <div class="check-list">
+                    <button class="check-card" data-check="trace">
+                        <span>Trace 透传</span>
+                        <small>请求头、响应头、meta.traceId、MDC</small>
+                    </button>
+                    <button class="check-card" data-check="web">
+                        <span>统一响应</span>
+                        <small>ApiResponse 成功响应</small>
+                    </button>
+                    <button class="check-card" data-check="echo">
+                        <span>请求回显</span>
+                        <small>POST 请求体与 Trace 绑定</small>
+                    </button>
+                    <button class="check-card danger" data-check="exception">
+                        <span>异常收口</span>
+                        <small>BusinessException 统一返回</small>
+                    </button>
+                </div>
+            </aside>
+        </section>
+
+        <section class="panel response-panel" id="response">
+            <div class="panel-title">
+                <div>
+                    <h2>响应详情</h2>
+                    <p>所有手动验证都会在这里展示状态、TraceId、响应头和响应体</p>
+                </div>
+                <button class="ghost-button" id="clearBtn">清空</button>
+            </div>
+            <div class="response-meta" id="responseMeta">
+                <span>等待验证</span>
+            </div>
+            <pre id="responseBody">点击上方按钮开始验证</pre>
+        </section>
+    </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>

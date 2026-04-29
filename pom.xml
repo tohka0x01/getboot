@@ -79,6 +79,7 @@
         <module>getboot-auth</module>
         <module>getboot-wechat</module>
         <module>getboot-payment</module>
+        <module>getboot-lab</module>
     </modules>
 
     <dependencyManagement>

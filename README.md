@@ -228,6 +228,16 @@ transportMode: "NIO"
 
 完整矩阵看 [`docs/MODULE_MAP.md`](./docs/MODULE_MAP.md)。
 
+## 能力验证台
+
+仓库内提供 [`getboot-lab`](./getboot-lab/README.md)，用于手动验证 GetBoot 公共能力。它不是业务 starter，而是发版前和接入前使用的验证应用。
+
+```bash
+mvn -pl getboot-lab -am spring-boot:run
+```
+
+启动后访问 `http://127.0.0.1:18080/`，可以直接验证统一响应、Trace、异常收口，并查看所有模块后续要补的真实验证入口。
+
 ## 仓库里有什么
 
 ### Foundation
