@@ -39,3 +39,10 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Local sibling workspaces ###
+/customer-user-center/
+/enterprise-4a-platform/
+/game/
+/gateway/
+/village-care/
