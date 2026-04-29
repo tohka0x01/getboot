@@ -11,7 +11,7 @@
 
 ## 当前落地顺序
 
-- 已完成首版：`getboot-idempotency`、`getboot-storage`、`getboot-sms`、`getboot-search`、`getboot-ai`、`getboot-mail`
+- 已完成首版：`getboot-idempotency`、`getboot-storage`、`getboot-sms`、`getboot-search`、`getboot-mail`
 - 当前没有新的 P1 模块；后续候选能力仍以这里为准，继续按边界和复用价值评估
 - 如果后续继续扩展，优先回看第三方登录、验证码、消息治理增强等候选方向是否值得进入下一轮
 
@@ -20,7 +20,7 @@
 - 消息重试、延迟消息、死信治理优先在 `getboot-mq` 模块内增强，不单拆新模块
 - 邮件发送能力已以 `getboot-mail` 首版落地，后续优先在模块内补供应商实现与边界评估
 
-排序原则很简单：越接近高频基础能力、越容易形成统一抽象的模块，优先级越高；模型编排、检索增强这类变化更快的能力，放在后面落地。
+排序原则很简单：越接近高频基础能力、越容易形成统一抽象的模块，优先级越高；变化快、厂商差异大的能力先不进入公共 starter。
 
 更细评估见 [`docs/COMMON_CAPABILITY_ASSESSMENT.md`](./COMMON_CAPABILITY_ASSESSMENT.md)。
 
@@ -31,7 +31,6 @@
 | `getboot-idempotency` | 幂等键生成、请求去重、重复请求结果复用、TTL 管理 | `redis.redisson` / `database.jdbc` | `getboot-cache` / `getboot-coordination` | `getboot.idempotency.*` | 不承担分布式锁全部职责，不直接做 webhook 编排 |
 | `getboot-storage` | 对象上传、下载、删除、预签名、元数据读写、桶路由 | `oss` / `minio` / `s3` | 无强制依赖；可选复用 `getboot-web` 上传模型 | `getboot.storage.*` | 不抽媒体处理、转码、审核、CDN 域名管理 |
 | `getboot-search` | 搜索索引写入、查询请求构建、分页/高亮结果模型、索引模板初始化 | `elasticsearch` / `opensearch` | 无强制依赖 | `getboot.search.*` | 不把推荐、向量检索、RAG 编排混入传统搜索模块 |
-| `getboot-ai` | 模型调用门面、提示词模板、Embedding / Rerank 接口、工具编排入口 | `openai` / `qwen` / `doubao` / `zhipu` / `embedding-store` | 可选依赖 `getboot-search` / `getboot-storage` | `getboot.ai.*` | 不在第一阶段直接做完整 Agent 平台或工作流系统 |
 | `getboot-sms` | 短信模板发送、签名/模板路由、验证码短信、供应商降级 | `aliyun` / `tencent` / `huawei` | 无强制依赖 | `getboot.sms.*` | 不把邮件、站内信、Push 混成一个消息中心 |
 | `getboot-mail` | SMTP 发送门面、主题/正文模板渲染、附件组装、默认发件人收口 | `smtp` | 无强制依赖 | `getboot.mail.*` | 不把短信、站内信、回执/退信处理和营销编排混成一个消息中心 |
 
@@ -59,14 +58,6 @@
 - `support`：统一查询 DSL 包装、默认分页/高亮模型
 - `infrastructure.elasticsearch` / `infrastructure.opensearch`
 
-### `getboot-ai`
-
-- `api.model`：聊天请求、补全结果、Embedding/Rerank 输入输出
-- `api.prompt`：提示词模板与变量渲染模型
-- `spi`：模型客户端、工具调用适配器、向量存储路由器
-- `support`：默认提示词渲染、默认模型选择策略
-- `infrastructure.<provider>`：供应商 SDK 适配
-
 ### `getboot-sms`
 
 - `api`：发送请求、批量发送请求、发送回执
@@ -89,8 +80,6 @@
   先做对象上传/删除/预签名 URL，不先抽分片上传编排
 - `getboot-search`
   首版已按索引写入、基础查询和分页落地，未扩展 DSL 全量覆盖
-- `getboot-ai`
-  首版已按 Chat / Embedding / Rerank 三条稳定入口落地，当前 Rerank 基于 Embedding 相似度完成
 - `getboot-sms`
   先做单发、批量发送、验证码模板，不先做营销短信编排
 - `getboot-mail`

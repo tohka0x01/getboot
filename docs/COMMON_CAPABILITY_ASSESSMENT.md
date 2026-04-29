@@ -110,7 +110,7 @@
 
 ## 对路线图的影响
 
-- 路线图首批模块 `getboot-idempotency / getboot-storage / getboot-sms / getboot-search / getboot-ai` 已完成首版落地，`getboot-mail` 也已完成首版
+- 路线图首批模块 `getboot-idempotency / getboot-storage / getboot-sms / getboot-search` 已完成首版落地，`getboot-mail` 也已完成首版
 - `getboot-mq` 后续增强优先在模块内扩展，不新增独立消息治理模块
 - 第三方登录与验证码相关能力，继续保留方向，不抢占下一轮高优先级模块位
 

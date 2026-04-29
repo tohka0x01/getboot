@@ -219,7 +219,7 @@ transportMode: "NIO"
 | Webhook 安全编排 | `getboot-webhook` | 复用限流和幂等能力，不再散落在业务项目里 |
 | 对象存储 | `getboot-storage` | 统一上传、下载、删除、预签名 URL |
 | 短信 / 邮件 | `getboot-sms` / `getboot-mail` | 通知类基础能力统一走门面 |
-| AI / 搜索 | `getboot-ai` / `getboot-search` | 检索增强和模型调用收口到稳定入口 |
+| 搜索 | `getboot-search` | 统一索引写入、基础查询和分页结果 |
 | RocketMQ / Kafka / MQTT | `getboot-mq` | 统一生产入口、Trace 透传和配置桥接 |
 | Dubbo | `getboot-rpc` | Trace 透传、认证和序列化安全收口 |
 | WebSocket 推送 | `getboot-websocket` | 统一会话注册、按用户 / 会话推送 |
@@ -244,7 +244,6 @@ transportMode: "NIO"
 - [`getboot-storage`](./getboot-storage/README.md)：对象存储
 - [`getboot-sms`](./getboot-sms/README.md)：短信发送
 - [`getboot-mail`](./getboot-mail/README.md)：邮件发送
-- [`getboot-ai`](./getboot-ai/README.md)：Chat / Embedding / Rerank
 - [`getboot-search`](./getboot-search/README.md)：索引写入与基础查询
 - [`getboot-observability`](./getboot-observability/README.md)：Trace、指标、Prometheus、SkyWalking
 
